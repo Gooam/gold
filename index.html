@@ -11,58 +11,58 @@
             font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
             background-color: #f8fafc;
             margin: 0;
-            padding: 1px;
+            padding: 4px;
             color: #1e293b;
         }
         .container {
             max-width: 1200px;
             margin: 0 auto;
             background: #ffffff;
-            padding: 4px;
-            border-radius: 4px;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            padding: 8px;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
         h1 {
             text-align: center;
-            font-size: 1rem;
-            margin: 2px 0 4px 0;
+            font-size: 1.1rem;
+            margin: 4px 0 8px 0;
             color: #0f172a;
         }
         .common-controls {
             background: #f1f5f9;
-            padding: 2px 4px;
-            border-radius: 4px;
-            margin-bottom: 3px;
+            padding: 6px 8px;
+            border-radius: 6px;
+            margin-bottom: 8px;
             display: flex;
             flex-direction: column;
-            gap: 1px;
+            gap: 3px;
         }
         .common-controls label {
-            font-size: 0.7rem;
+            font-size: 0.8rem;
             font-weight: bold;
             color: #334155;
         }
         .common-controls input {
-            padding: 2px 4px;
-            font-size: 0.8rem;
+            padding: 5px 8px;
+            font-size: 0.9rem;
             border: 1px solid #cbd5e1;
-            border-radius: 3px;
+            border-radius: 4px;
             width: 100%;
             box-sizing: border-box;
-            height: 20px;
+            height: 28px;
         }
         .actions-top {
             display: flex;
-            gap: 3px;
-            margin-bottom: 3px;
+            gap: 6px;
+            margin-bottom: 8px;
         }
         button {
             flex: 1;
-            padding: 3px;
-            font-size: 0.75rem;
+            padding: 6px;
+            font-size: 0.8rem;
             font-weight: bold;
             border: none;
-            border-radius: 3px;
+            border-radius: 4px;
             cursor: pointer;
             color: white;
         }
@@ -74,33 +74,30 @@
         .table-responsive {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
-            max-height: 85vh;
+            max-height: 82vh;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.75rem;
+            font-size: 0.82rem;
             white-space: nowrap;
-            min-width: 850px;
+            min-width: 820px;
         }
         th, td {
             border: 1px solid #e2e8f0;
-            padding: 0px !important; /* 모바일 강제 패딩 제거 */
-            margin: 0 !important;
+            padding: 3px 4px; /* 지나치지 않고 아담하며 편안한 높이 */
             text-align: center;
             vertical-align: middle;
-            height: 16px !important; /* 행 높이 극단적 압축 */
-            line-height: 16px !important;
+            height: 30px;
         }
         th {
             background-color: #f1f5f9;
             color: #334155;
             font-weight: bold;
-            padding: 1px 0px !important;
+            padding: 6px 4px;
             position: sticky;
             top: 0;
             z-index: 10;
-            height: 18px !important;
         }
         
         /* 날짜(일자) 열 고정 (Sticky Column) */
@@ -109,9 +106,9 @@
             left: 0;
             background-color: #f8fafc;
             z-index: 5;
-            width: 50px;
+            width: 65px;
             box-shadow: 2px 0 3px rgba(0,0,0,0.03);
-            padding: 0 !important;
+            padding: 2px;
         }
         th:first-child {
             z-index: 15;
@@ -129,43 +126,38 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 2px;
-            height: 16px;
+            padding: 0 4px;
         }
 
         .btn-add {
             background-color: #16a34a;
             color: white;
             border: none;
-            padding: 0px 1px;
-            font-size: 0.45rem;
-            border-radius: 2px;
+            padding: 2px 4px;
+            font-size: 0.65rem;
+            border-radius: 3px;
             cursor: pointer;
-            height: 14px;
-            line-height: 14px;
         }
         .btn-del {
             background-color: #dc2626;
             color: white;
             border: none;
-            padding: 0px 1px;
-            font-size: 0.45rem;
-            border-radius: 2px;
+            padding: 2px 4px;
+            font-size: 0.6rem;
+            border-radius: 3px;
             cursor: pointer;
-            height: 14px;
-            line-height: 14px;
         }
+        
+        /* 6자리 금액이 딱 예쁘게 들어가는 최적의 너비 설정 */
         input.data-input {
-            width: 100%;
-            padding: 0px 2px !important;
-            margin: 0 !important;
-            font-size: 0.75rem;
-            border: none; /* 테두리를 없애서 셀과 완전히 일체화 */
-            background: transparent;
+            width: 85px;
+            padding: 3px 5px;
+            font-size: 0.85rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 3px;
             box-sizing: border-box;
             text-align: right;
-            height: 16px !important;
-            line-height: 16px !important;
+            height: 26px;
         }
         input.data-input:focus {
             outline: 1.5px solid #2563eb;
@@ -177,24 +169,20 @@
             background-color: #f8fafc;
             color: #dc2626;
             text-align: right;
-            padding-right: 3px !important;
+            padding-right: 6px;
             font-weight: 600;
-            min-width: 65px;
-            height: 16px !important;
-            font-size: 0.75rem;
-            line-height: 16px !important;
+            min-width: 85px;
+            font-size: 0.85rem;
         }
         /* 차액도 레드(Red) 색상 */
         .red-diff-cell {
             background-color: #f8fafc;
             color: #dc2626;
             text-align: right;
-            padding-right: 3px !important;
+            padding-right: 6px;
             font-weight: 600;
-            min-width: 65px;
-            height: 16px !important;
-            font-size: 0.75rem;
-            line-height: 16px !important;
+            min-width: 85px;
+            font-size: 0.85rem;
         }
 
         #chartModal {
@@ -205,13 +193,13 @@
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            padding: 6px;
+            padding: 8px;
             box-sizing: border-box;
         }
         .modal-content {
             background: white;
-            padding: 8px;
-            border-radius: 6px;
+            padding: 12px;
+            border-radius: 8px;
             width: 100%;
             max-width: 600px;
             max-height: 90vh;
@@ -222,22 +210,22 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
         }
         .modal-header h3 {
             margin: 0;
-            font-size: 0.9rem;
+            font-size: 1rem;
         }
         .btn-close {
             background: #dc2626;
-            padding: 3px 6px;
-            font-size: 0.7rem;
+            padding: 4px 8px;
+            font-size: 0.75rem;
             flex: unset;
         }
         .chart-container {
             position: relative;
             flex-grow: 1;
-            height: 240px;
+            height: 250px;
             width: 100%;
         }
     </style>
@@ -319,7 +307,7 @@
                     html += `
                         <td class="day-col" rowspan="${count}">
                             <div class="day-cell-content">
-                                <span><b>${i}</b></span>
+                                <span><b>${i}일</b></span>
                                 <button class="btn-add" onclick="addSubRow(${i})">+추가</button>
                             </div>
                         </td>
@@ -334,8 +322,8 @@
                     <td><input type="number" class="data-input" id="jong_${i}_${j}" placeholder="종로" step="1" oninput="calculateDiff(${i}, ${j})"></td>
                     <td class="red-diff-cell" id="diff_${i}_${j}">-</td>
                     <td>
-                        <div style="display: flex; gap: 1px; align-items: center; justify-content: center;">
-                            <input type="number" class="data-input" id="memo_${i}_${j}" placeholder="자료금" step="1" style="flex:1;">
+                        <div style="display: flex; gap: 4px; align-items: center; justify-content: center;">
+                            <input type="number" class="data-input" id="memo_${i}_${j}" placeholder="자료금" step="1" style="width: 85px;">
                             ${j > 1 ? `<button class="btn-del" onclick="removeSubRow(${i},${j})">삭제</button>` : ''}
                         </div>
                     </td>
@@ -474,12 +462,12 @@
                 };
             }
         }
-        localStorage.setItem('goldData_v24', JSON.stringify(data));
+        localStorage.setItem('goldData_v25', JSON.stringify(data));
         alert('저장되었습니다!');
     }
 
     function loadData() {
-        const saved = localStorage.getItem('goldData_v24');
+        const saved = localStorage.getItem('goldData_v25');
         if (!saved) return;
         try {
             const data = JSON.parse(saved);
@@ -514,19 +502,19 @@
     }
 
     function backupData() {
-        const data = localStorage.getItem('goldData_v24') || '{}';
+        const data = localStorage.getItem('goldData_v25') || '{}';
         const blob = new Blob([data], {type: 'application/json'});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'gold_backup_v24.json';
+        a.download = 'gold_backup_v25.json';
         a.click();
         URL.revokeObjectURL(url);
     }
 
     function resetData() {
         if (confirm('모든 데이터를 초기화하시겠습니까?')) {
-            localStorage.removeItem('goldData_v24');
+            localStorage.removeItem('goldData_v25');
             rowCounts = Array(DAYS_COUNT + 1).fill(1);
             initTable();
             document.getElementById('commonExchange').value = '';
