@@ -11,40 +11,40 @@
             font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
             background-color: #f8fafc;
             margin: 0;
-            padding: 6px;
+            padding: 4px;
             color: #1e293b;
         }
         .container {
             max-width: 1200px;
             margin: 0 auto;
             background: #ffffff;
-            padding: 10px;
+            padding: 8px;
             border-radius: 8px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
         h1 {
             text-align: center;
-            font-size: 1.2rem;
-            margin: 6px 0 10px 0;
+            font-size: 1.15rem;
+            margin: 4px 0 8px 0;
             color: #0f172a;
         }
         .common-controls {
             background: #f1f5f9;
-            padding: 8px 10px;
+            padding: 6px 8px;
             border-radius: 6px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             display: flex;
             flex-direction: column;
             gap: 4px;
         }
         .common-controls label {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: bold;
             color: #334155;
         }
         .common-controls input {
-            padding: 6px 10px;
-            font-size: 0.95rem;
+            padding: 5px 8px;
+            font-size: 0.9rem;
             border: 1px solid #cbd5e1;
             border-radius: 4px;
             width: 100%;
@@ -53,15 +53,15 @@
         .actions-top {
             display: flex;
             gap: 6px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         button {
             flex: 1;
-            padding: 8px;
-            font-size: 0.85rem;
+            padding: 6px;
+            font-size: 0.8rem;
             font-weight: bold;
             border: none;
-            border-radius: 6px;
+            border-radius: 4px;
             cursor: pointer;
             color: white;
         }
@@ -73,7 +73,7 @@
         .table-responsive {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
-            max-height: 75vh;
+            max-height: 80vh;
         }
         table {
             width: 100%;
@@ -84,7 +84,7 @@
         }
         th, td {
             border: 1px solid #e2e8f0;
-            padding: 6px 8px;
+            padding: 2px 4px; /* 무식할 정도로 칸 높이를 바짝 좁힘 */
             text-align: center;
             vertical-align: middle;
         }
@@ -92,7 +92,7 @@
             background-color: #f1f5f9;
             color: #334155;
             font-weight: bold;
-            padding: 8px 6px;
+            padding: 6px 4px;
             position: sticky;
             top: 0;
             z-index: 10;
@@ -104,16 +104,19 @@
             left: 0;
             background-color: #f8fafc;
             z-index: 5;
-            width: 75px;
-            box-shadow: 2px 0 4px rgba(0,0,0,0.03);
+            width: 70px;
+            box-shadow: 2px 0 3px rgba(0,0,0,0.03);
         }
         th:first-child {
             z-index: 15;
             background-color: #f1f5f9;
         }
 
-        /* 깔끔하고 심플한 행 경계선 (투박한 선 제거) */
-        tr.day-row {
+        /* 깔끔하고 모던한 행 경계선 */
+        tr.day-group-end {
+            border-bottom: 1px solid #cbd5e1;
+        }
+        tr.sub-row {
             border-bottom: 1px solid #e2e8f0;
         }
 
@@ -121,42 +124,55 @@
             background-color: #16a34a;
             color: white;
             border: none;
-            padding: 2px 5px;
-            font-size: 0.7rem;
+            padding: 1px 4px;
+            font-size: 0.65rem;
             border-radius: 3px;
             cursor: pointer;
-            margin-top: 3px;
+            display: block;
+            margin: 0 auto 1px auto;
+        }
+        .btn-del {
+            background-color: #dc2626;
+            color: white;
+            border: none;
+            padding: 1px 4px;
+            font-size: 0.6rem;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-top: 1px;
+            display: block;
+            margin: 0 auto;
         }
         input.data-input {
-            width: 85px;
-            padding: 5px 6px;
-            font-size: 0.9rem;
+            width: 78px;
+            padding: 2px 4px;
+            font-size: 0.85rem;
             border: 1px solid #cbd5e1;
-            border-radius: 4px;
+            border-radius: 3px;
             box-sizing: border-box;
             text-align: right;
         }
         input.data-input:focus {
-            outline: 2px solid #2563eb;
+            outline: 1.5px solid #2563eb;
         }
         
-        /* 자동입력되는 1g원화, 돈(3.75g) 시세는 레드(Red) 색상 */
+        /* 1g원화, 돈(3.75g) 시세는 레드(Red) 색상 */
         .red-readonly-cell {
             background-color: #f8fafc;
             color: #dc2626;
             text-align: right;
-            padding-right: 8px;
+            padding-right: 6px;
             font-weight: 600;
-            min-width: 85px;
+            min-width: 75px;
         }
-        /* 차액(전일대비 등)도 레드(Red) 색상 */
+        /* 차액도 레드(Red) 색상 */
         .red-diff-cell {
             background-color: #f8fafc;
             color: #dc2626;
             text-align: right;
-            padding-right: 8px;
+            padding-right: 6px;
             font-weight: 600;
-            min-width: 85px;
+            min-width: 75px;
         }
 
         #chartModal {
@@ -172,8 +188,8 @@
         }
         .modal-content {
             background: white;
-            padding: 12px;
-            border-radius: 10px;
+            padding: 10px;
+            border-radius: 8px;
             width: 100%;
             max-width: 600px;
             max-height: 90vh;
@@ -184,22 +200,22 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
         .modal-header h3 {
             margin: 0;
-            font-size: 1rem;
+            font-size: 0.95rem;
         }
         .btn-close {
             background: #dc2626;
-            padding: 4px 10px;
-            font-size: 0.8rem;
+            padding: 4px 8px;
+            font-size: 0.75rem;
             flex: unset;
         }
         .chart-container {
             position: relative;
             flex-grow: 1;
-            height: 260px;
+            height: 250px;
             width: 100%;
         }
     </style>
@@ -218,7 +234,7 @@
         <button class="btn-save" onclick="saveData()">저장</button>
         <button class="btn-backup" onclick="backupData()">백업</button>
         <button class="btn-chart" onclick="openChart()">그래프</button>
-        <button class="btn-reset" onclick="resetData()">초기화</button>
+        <button class="btn-reset" onclick="resetData()">전체 초기화</button>
     </div>
 
     <div class="table-responsive">
@@ -236,7 +252,7 @@
                 </tr>
             </thead>
             <tbody id="tableBody">
-                <!-- Javascript로 1~31일 자동 생성 -->
+                <!-- Javascript로 동적 생성 -->
             </tbody>
         </table>
     </div>
@@ -257,53 +273,134 @@
 
 <script>
     const DAYS_COUNT = 31;
+    let rowCounts = Array(DAYS_COUNT + 1).fill(1);
     let goldChartInstance = null;
 
     function initTable() {
-        const tbody = document.getElementById('tableBody');
-        let html = '';
-        for (let i = 1; i <= DAYS_COUNT; i++) {
-            html += `
-                <tr class="day-row">
-                    <td class="day-col">
-                        ${i}일<br>
-                        <button class="btn-add" onclick="addRow(${i})">+추가</button>
-                    </td>
-                    <td><input type="number" class="data-input" id="intl_${i}_1" placeholder="국제가" step="any" oninput="calculateRow(${i})"></td>
-                    <td><input type="number" class="data-input" id="ex_${i}_1" placeholder="환율" step="any" oninput="calculateRow(${i})"></td>
-                    <td class="red-readonly-cell" id="g1_${i}_1">-</td>
-                    <td class="red-readonly-cell" id="don_${i}_1">-</td>
-                    <td><input type="number" class="data-input" id="jong_${i}_1" placeholder="종로" step="any" oninput="calculateDiff(${i})"></td>
-                    <td class="red-diff-cell" id="diff_${i}_1">-</td>
-                    <td><input type="text" class="data-input" id="memo_${i}_1" placeholder="자료금"></td>
-                </tr>
-            `;
-        }
-        tbody.innerHTML = html;
+        renderTableStructure();
         loadData();
     }
 
-    function addRow(day) {
-        alert(day + '일 항목에 세부 행 추가 기능 준비 중입니다.');
+    function renderTableStructure() {
+        const tbody = document.getElementById('tableBody');
+        let html = '';
+        
+        for (let i = 1; i <= DAYS_COUNT; i++) {
+            let count = rowCounts[i];
+            for (let j = 1; j <= count; j++) {
+                let isLast = (j === count);
+                let rowClass = isLast ? 'day-group-end' : 'sub-row';
+                
+                html += `<tr class="${rowClass}" data-day="${i}" data-sub="${j}">`;
+                
+                if (j === 1) {
+                    html += `
+                        <td class="day-col" rowspan="${count}">
+                            <b>${i}일</b><br>
+                            <button class="btn-add" onclick="addSubRow(${i})">+추가</button>
+                        </td>
+                    `;
+                }
+
+                html += `
+                    <td><input type="number" class="data-input" id="intl_${i}_${j}" placeholder="국제가" step="any" oninput="calculateRow(${i}, ${j})"></td>
+                    <td><input type="number" class="data-input" id="ex_${i}_${j}" placeholder="환율" step="any" oninput="calculateRow(${i}, ${j})"></td>
+                    <td class="red-readonly-cell" id="g1_${i}_${j}">-</td>
+                    <td class="red-readonly-cell" id="don_${i}_${j}">-</td>
+                    <td><input type="number" class="data-input" id="jong_${i}_${j}" placeholder="종로" step="any" oninput="calculateDiff(${i}, ${j})"></td>
+                    <td class="red-diff-cell" id="diff_${i}_${j}">-</td>
+                    <td>
+                        <div style="display: flex; gap: 4px; align-items: center;">
+                            <input type="text" class="data-input" id="memo_${i}_${j}" placeholder="자료금" style="flex: 1;">
+                            ${j > 1 ? `<button class="btn-del" onclick="removeSubRow(${i},${j})">삭제</button>` : ''}
+                        </div>
+                    </td>
+                `;
+
+                html += `</tr>`;
+            }
+        }
+        tbody.innerHTML = html;
+    }
+
+    function addSubRow(day) {
+        saveCurrentValuesToMemory();
+        rowCounts[day]++;
+        renderTableStructure();
+        restoreValuesFromMemory();
+    }
+
+    function removeSubRow(day, sub) {
+        saveCurrentValuesToMemory();
+        // 배열 재조정을 위해 해당 서브 행 이후의 데이터들을 앞으로 당김
+        for (let j = sub; j < rowCounts[day]; j++) {
+            memoryData[`intl_${day}_${j}`] = memoryData[`intl_${day}_${j+1}`];
+            memoryData[`ex_${day}_${j}`] = memoryData[`ex_${day}_${j+1}`];
+            memoryData[`jong_${day}_${j}`] = memoryData[`jong_${day}_${j+1}`];
+            memoryData[`memo_${day}_${j}`] = memoryData[`memo_${day}_${j+1}`];
+        }
+        delete memoryData[`intl_${day}_${rowCounts[day]}`];
+        delete memoryData[`ex_${day}_${rowCounts[day]}`];
+        delete memoryData[`jong_${day}_${rowCounts[day]}`];
+        delete memoryData[`memo_${day}_${rowCounts[day]}`];
+
+        rowCounts[day]--;
+        renderTableStructure();
+        restoreValuesFromMemory();
+    }
+
+    let memoryData = {};
+    function saveCurrentValuesToMemory() {
+        memoryData = {};
+        for (let i = 1; i <= DAYS_COUNT; i++) {
+            for (let j = 1; j <= rowCounts[i]; j++) {
+                let intlElem = document.getElementById(`intl_${i}_${j}`);
+                let exElem = document.getElementById(`ex_${i}_${j}`);
+                let jongElem = document.getElementById(`jong_${i}_${j}`);
+                let memoElem = document.getElementById(`memo_${i}_${j}`);
+                if (intlElem) memoryData[`intl_${i}_${j}`] = intlElem.value;
+                if (exElem) memoryData[`ex_${i}_${j}`] = exElem.value;
+                if (jongElem) memoryData[`jong_${i}_${j}`] = jongElem.value;
+                if (memoElem) memoryData[`memo_${i}_${j}`] = memoElem.value;
+            }
+        }
+    }
+
+    function restoreValuesFromMemory() {
+        for (let key in memoryData) {
+            let elem = document.getElementById(key);
+            if (elem) {
+                elem.value = memoryData[key];
+                let parts = key.split('_');
+                let day = parseInt(parts[1]), sub = parseInt(parts[2]);
+                if (key.startsWith('intl') || key.startsWith('ex')) {
+                    calculateRow(day, sub);
+                } else if (key.startsWith('jong')) {
+                    calculateDiff(day, sub);
+                }
+            }
+        }
     }
 
     function applyCommonExchange() {
         const commonVal = document.getElementById('commonExchange').value;
         for (let i = 1; i <= DAYS_COUNT; i++) {
-            const exInput = document.getElementById(`ex_${i}_1`);
-            if (exInput) {
-                exInput.value = commonVal;
-                calculateRow(i);
+            for (let j = 1; j <= rowCounts[i]; j++) {
+                const exInput = document.getElementById(`ex_${i}_${j}`);
+                if (exInput) {
+                    exInput.value = commonVal;
+                    calculateRow(i, j);
+                }
             }
         }
     }
 
-    function calculateRow(day) {
-        const intlVal = parseFloat(document.getElementById(`intl_${day}_1`).value);
-        const exVal = parseFloat(document.getElementById(`ex_${day}_1`).value);
+    function calculateRow(day, sub) {
+        const intlVal = parseFloat(document.getElementById(`intl_${day}_${sub}`).value);
+        const exVal = parseFloat(document.getElementById(`ex_${day}_${sub}`).value);
 
-        const g1Cell = document.getElementById(`g1_${day}_1`);
-        const donCell = document.getElementById(`don_${day}_1`);
+        const g1Cell = document.getElementById(`g1_${day}_${sub}`);
+        const donCell = document.getElementById(`don_${day}_${sub}`);
 
         if (!isNaN(intlVal) && !isNaN(exVal)) {
             const g1 = (intlVal * exVal) / 31.1035;
@@ -312,23 +409,22 @@
             g1Cell.innerText = Math.round(g1).toLocaleString();
             donCell.innerText = Math.round(don).toLocaleString();
             
-            // 돈 시세가 계산될 때 종로시세와 차액도 함께 계산
-            calculateDiff(day, don);
+            calculateDiff(day, sub, don);
         } else {
             g1Cell.innerText = '-';
             donCell.innerText = '-';
-            document.getElementById(`diff_${day}_1`).innerText = '-';
+            document.getElementById(`diff_${day}_${sub}`).innerText = '-';
         }
     }
 
-    function calculateDiff(day, precalculatedDon = null) {
+    function calculateDiff(day, sub, precalculatedDon = null) {
         const donText = precalculatedDon !== null ? precalculatedDon : (() => {
-            const el = document.getElementById(`don_${day}_1`);
+            const el = document.getElementById(`don_${day}_${sub}`);
             return el && el.innerText !== '-' ? parseFloat(el.innerText.replace(/,/g, '')) : NaN;
         })();
         
-        const jongVal = parseFloat(document.getElementById(`jong_${day}_1`).value);
-        const diffCell = document.getElementById(`diff_${day}_1`);
+        const jongVal = parseFloat(document.getElementById(`jong_${day}_${sub}`).value);
+        const diffCell = document.getElementById(`diff_${day}_${sub}`);
 
         if (!isNaN(donText) && !isNaN(jongVal)) {
             const diff = jongVal - donText;
@@ -342,39 +438,52 @@
     function saveData() {
         const data = {
             commonExchange: document.getElementById('commonExchange').value,
-            rows: []
+            rowCounts: rowCounts,
+            rows: {}
         };
         for (let i = 1; i <= DAYS_COUNT; i++) {
-            data.rows.push({
-                intl: document.getElementById(`intl_${i}_1`).value,
-                ex: document.getElementById(`ex_${i}_1`).value,
-                jong: document.getElementById(`jong_${i}_1`).value,
-                memo: document.getElementById(`memo_${i}_1`).value
-            });
+            for (let j = 1; j <= rowCounts[i]; j++) {
+                data.rows[`${i}_${j}`] = {
+                    intl: document.getElementById(`intl_${i}_${j}`).value,
+                    ex: document.getElementById(`ex_${i}_${j}`).value,
+                    jong: document.getElementById(`jong_${i}_${j}`).value,
+                    memo: document.getElementById(`memo_${i}_${j}`).value
+                };
+            }
         }
-        localStorage.setItem('goldData_v19', JSON.stringify(data));
+        localStorage.setItem('goldData_v20', JSON.stringify(data));
         alert('저장되었습니다!');
     }
 
     function loadData() {
-        const saved = localStorage.getItem('goldData_v19');
+        const saved = localStorage.getItem('goldData_v20');
         if (!saved) return;
         try {
             const data = JSON.parse(saved);
             if (data.commonExchange) {
                 document.getElementById('commonExchange').value = data.commonExchange;
             }
+            if (data.rowCounts) {
+                rowCounts = data.rowCounts;
+                renderTableStructure();
+            }
             if (data.rows) {
-                data.rows.forEach((row, index) => {
-                    const day = index + 1;
-                    if (document.getElementById(`intl_${day}_1`)) {
-                        document.getElementById(`intl_${day}_1`).value = row.intl || '';
-                        document.getElementById(`ex_${day}_1`).value = row.ex || '';
-                        if (document.getElementById(`jong_${day}_1`)) document.getElementById(`jong_${day}_1`).value = row.jong || '';
-                        if (document.getElementById(`memo_${day}_1`)) document.getElementById(`memo_${day}_1`).value = row.memo || '';
-                        calculateRow(day);
+                for (let key in data.rows) {
+                    let parts = key.split('_');
+                    let i = parseInt(parts[0]), j = parseInt(parts[1]);
+                    let intlElem = document.getElementById(`intl_${i}_${j}`);
+                    let exElem = document.getElementById(`ex_${i}_${j}`);
+                    let jongElem = document.getElementById(`jong_${i}_${j}`);
+                    let memoElem = document.getElementById(`memo_${i}_${j}`);
+                    
+                    if (intlElem && exElem) {
+                        intlElem.value = data.rows[key].intl || '';
+                        exElem.value = data.rows[key].ex || '';
+                        if (jongElem) jongElem.value = data.rows[key].jong || '';
+                        if (memoElem) memoElem.value = data.rows[key].memo || '';
+                        calculateRow(i, j);
                     }
-                });
+                }
             }
         } catch (e) {
             console.error('데이터 로드 실패', e);
@@ -382,19 +491,20 @@
     }
 
     function backupData() {
-        const data = localStorage.getItem('goldData_v19') || '{}';
+        const data = localStorage.getItem('goldData_v20') || '{}';
         const blob = new Blob([data], {type: 'application/json'});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'gold_backup_v19.json';
+        a.download = 'gold_backup_v20.json';
         a.click();
         URL.revokeObjectURL(url);
     }
 
     function resetData() {
         if (confirm('모든 데이터를 초기화하시겠습니까?')) {
-            localStorage.removeItem('goldData_v19');
+            localStorage.removeItem('goldData_v20');
+            rowCounts = Array(DAYS_COUNT + 1).fill(1);
             initTable();
             document.getElementById('commonExchange').value = '';
         }
