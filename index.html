@@ -11,28 +11,28 @@
             font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
             background-color: #f8fafc;
             margin: 0;
-            padding: 2px;
+            padding: 1px;
             color: #1e293b;
         }
         .container {
             max-width: 1200px;
             margin: 0 auto;
             background: #ffffff;
-            padding: 6px;
-            border-radius: 6px;
+            padding: 4px;
+            border-radius: 4px;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
         h1 {
             text-align: center;
-            font-size: 1.1rem;
-            margin: 2px 0 6px 0;
+            font-size: 1.05rem;
+            margin: 2px 0 4px 0;
             color: #0f172a;
         }
         .common-controls {
             background: #f1f5f9;
             padding: 4px 6px;
             border-radius: 4px;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             display: flex;
             flex-direction: column;
             gap: 2px;
@@ -43,7 +43,7 @@
             color: #334155;
         }
         .common-controls input {
-            padding: 4px 6px;
+            padding: 3px 6px;
             font-size: 0.85rem;
             border: 1px solid #cbd5e1;
             border-radius: 3px;
@@ -53,15 +53,15 @@
         .actions-top {
             display: flex;
             gap: 4px;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
         button {
             flex: 1;
-            padding: 5px;
-            font-size: 0.8rem;
+            padding: 4px;
+            font-size: 0.75rem;
             font-weight: bold;
             border: none;
-            border-radius: 4px;
+            border-radius: 3px;
             cursor: pointer;
             color: white;
         }
@@ -73,26 +73,27 @@
         .table-responsive {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
-            max-height: 82vh;
+            max-height: 85vh;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             white-space: nowrap;
             min-width: 850px;
         }
         th, td {
             border: 1px solid #e2e8f0;
-            padding: 1px 3px; /* 행 간격을 무식할 정도로 바짝 슬림하게 압축 */
+            padding: 0px 2px; /* 원본 사진처럼 무식할 정도로 바짝 좁힌 슬림 행 높이 */
             text-align: center;
             vertical-align: middle;
+            height: 22px;
         }
         th {
             background-color: #f1f5f9;
             color: #334155;
             font-weight: bold;
-            padding: 4px 3px;
+            padding: 3px 2px;
             position: sticky;
             top: 0;
             z-index: 10;
@@ -104,7 +105,7 @@
             left: 0;
             background-color: #f8fafc;
             z-index: 5;
-            width: 65px;
+            width: 60px;
             box-shadow: 2px 0 3px rgba(0,0,0,0.03);
         }
         th:first-child {
@@ -123,32 +124,33 @@
             background-color: #16a34a;
             color: white;
             border: none;
-            padding: 1px 3px;
-            font-size: 0.6rem;
-            border-radius: 2px;
-            cursor: pointer;
-            display: block;
-            margin: 0 auto 1px auto;
-        }
-        .btn-del {
-            background-color: #dc2626;
-            color: white;
-            border: none;
-            padding: 1px 3px;
+            padding: 0px 2px;
             font-size: 0.55rem;
             border-radius: 2px;
             cursor: pointer;
             display: block;
             margin: 0 auto;
         }
+        .btn-del {
+            background-color: #dc2626;
+            color: white;
+            border: none;
+            padding: 0px 2px;
+            font-size: 0.5rem;
+            border-radius: 2px;
+            cursor: pointer;
+            display: block;
+            margin: 0 auto;
+        }
         input.data-input {
-            width: 76px;
-            padding: 2px 3px;
+            width: 75px;
+            padding: 1px 2px;
             font-size: 0.8rem;
             border: 1px solid #cbd5e1;
-            border-radius: 3px;
+            border-radius: 2px;
             box-sizing: border-box;
             text-align: right;
+            height: 20px;
         }
         input.data-input:focus {
             outline: 1.5px solid #2563eb;
@@ -161,7 +163,7 @@
             text-align: right;
             padding-right: 4px;
             font-weight: 600;
-            min-width: 72px;
+            min-width: 70px;
         }
         /* 차액도 레드(Red) 색상 */
         .red-diff-cell {
@@ -170,7 +172,7 @@
             text-align: right;
             padding-right: 4px;
             font-weight: 600;
-            min-width: 72px;
+            min-width: 70px;
         }
 
         #chartModal {
@@ -181,13 +183,13 @@
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            padding: 8px;
+            padding: 6px;
             box-sizing: border-box;
         }
         .modal-content {
             background: white;
-            padding: 10px;
-            border-radius: 8px;
+            padding: 8px;
+            border-radius: 6px;
             width: 100%;
             max-width: 600px;
             max-height: 90vh;
@@ -198,22 +200,22 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
         .modal-header h3 {
             margin: 0;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
         .btn-close {
             background: #dc2626;
-            padding: 4px 8px;
-            font-size: 0.75rem;
+            padding: 3px 6px;
+            font-size: 0.7rem;
             flex: unset;
         }
         .chart-container {
             position: relative;
             flex-grow: 1;
-            height: 250px;
+            height: 240px;
             width: 100%;
         }
     </style>
@@ -294,7 +296,7 @@
                 if (j === 1) {
                     html += `
                         <td class="day-col" rowspan="${count}">
-                            <b>${i}일</b><br>
+                            <b>${i}일</b>
                             <button class="btn-add" onclick="addSubRow(${i})">+추가</button>
                         </td>
                     `;
@@ -305,11 +307,11 @@
                     <td><input type="number" class="data-input" id="ex_${i}_${j}" placeholder="환율" step="any" oninput="calculateRow(${i}, ${j})"></td>
                     <td class="red-readonly-cell" id="g1_${i}_${j}">-</td>
                     <td class="red-readonly-cell" id="don_${i}_${j}">-</td>
-                    <td><input type="number" class="data-input" id="jong_${i}_${j}" placeholder="종로" step="any" oninput="calculateDiff(${i}, ${j})"></td>
+                    <td><input type="number" class="data-input" id="jong_${i}_${j}" placeholder="종로" step="1" oninput="calculateDiff(${i}, ${j})"></td>
                     <td class="red-diff-cell" id="diff_${i}_${j}">-</td>
                     <td>
-                        <div style="display: flex; gap: 3px; align-items: center;">
-                            <input type="number" class="data-input" id="memo_${i}_${j}" placeholder="자료금" step="any" style="flex: 1;">
+                        <div style="display: flex; gap: 2px; align-items: center; justify-content: center;">
+                            <input type="number" class="data-input" id="memo_${i}_${j}" placeholder="자료금" step="1" style="width: 58px;">
                             ${j > 1 ? `<button class="btn-del" onclick="removeSubRow(${i},${j})">삭제</button>` : ''}
                         </div>
                     </td>
@@ -448,12 +450,12 @@
                 };
             }
         }
-        localStorage.setItem('goldData_v21', JSON.stringify(data));
+        localStorage.setItem('goldData_v22', JSON.stringify(data));
         alert('저장되었습니다!');
     }
 
     function loadData() {
-        const saved = localStorage.getItem('goldData_v21');
+        const saved = localStorage.getItem('goldData_v22');
         if (!saved) return;
         try {
             const data = JSON.parse(saved);
@@ -488,19 +490,19 @@
     }
 
     function backupData() {
-        const data = localStorage.getItem('goldData_v21') || '{}';
+        const data = localStorage.getItem('goldData_v22') || '{}';
         const blob = new Blob([data], {type: 'application/json'});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'gold_backup_v21.json';
+        a.download = 'gold_backup_v22.json';
         a.click();
         URL.revokeObjectURL(url);
     }
 
     function resetData() {
         if (confirm('모든 데이터를 초기화하시겠습니까?')) {
-            localStorage.removeItem('goldData_v21');
+            localStorage.removeItem('goldData_v22');
             rowCounts = Array(DAYS_COUNT + 1).fill(1);
             initTable();
             document.getElementById('commonExchange').value = '';
