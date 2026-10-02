@@ -73,33 +73,47 @@
         .table-responsive {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
+            max-height: 70vh;
         }
         table {
             width: 100%;
             border-collapse: collapse;
             font-size: 0.95rem;
             white-space: nowrap;
-            min-width: 750px; /* 옛날처럼 가로 스크롤이 시원하게 생기도록 확보 */
+            min-width: 800px;
         }
         th, td {
             border: 1px solid #cbd5e1;
-            padding: 10px 12px;
+            padding: 12px 14px;
             text-align: center;
         }
         th {
             background-color: #e2e8f0;
             color: #334155;
             font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
-        /* 날짜별 행 구분선 (산뜻하고 뚜렷하게) */
-        tr.day-row {
-            border-bottom: 3px solid #94a3b8;
-        }
-        .day-col {
+        
+        /* 날짜(일자) 열 고정 (Sticky Column) 및 헤더와 겹칠 때 처리 */
+        th:first-child, td.day-col {
+            position: sticky;
+            left: 0;
             background-color: #f1f5f9;
-            font-weight: bold;
-            width: 80px;
+            z-index: 5;
+            width: 90px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
         }
+        th:first-child {
+            z-index: 15; /* 헤더의 첫 번째 칸은 가장 위로 */
+        }
+
+        /* 산뜻하고 날카로운 2줄 실선(double border) 적용 */
+        tr.day-row {
+            border-bottom: 3px double #64748b;
+        }
+
         .btn-add {
             background-color: #16a34a;
             color: white;
@@ -111,7 +125,7 @@
             margin-top: 4px;
         }
         input.data-input {
-            width: 100%;
+            width: 110px;
             padding: 8px 10px;
             font-size: 1rem;
             border: 1px solid #cbd5e1;
@@ -126,8 +140,9 @@
             background-color: #f8fafc;
             color: #334155;
             text-align: right;
-            padding-right: 12px;
+            padding-right: 14px;
             font-weight: 500;
+            min-width: 90px;
         }
         #chartModal {
             display: none;
@@ -195,7 +210,7 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width: 80px;">일자</th>
+                    <th>일자</th>
                     <th>국제가</th>
                     <th>환율</th>
                     <th>1g원화</th>
