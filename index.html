@@ -11,54 +11,54 @@
             font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
             background-color: #f8fafc;
             margin: 0;
-            padding: 10px;
-            color: #1c293b;
+            padding: 4px;
+            color: #1e293b;
         }
         .container {
             max-width: 1200px;
             margin: 0 auto;
             background: #ffffff;
-            padding: 15px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 8px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
         h1 {
             text-align: center;
-            font-size: 1.4rem;
-            margin-bottom: 15px;
+            font-size: 1.15rem;
+            margin: 4px 0 8px 0;
             color: #0f172a;
         }
         .common-controls {
             background: #f1f5f9;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 15px;
+            padding: 6px 8px;
+            border-radius: 6px;
+            margin-bottom: 8px;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 4px;
         }
         .common-controls label {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             font-weight: bold;
             color: #334155;
         }
         .common-controls input {
-            padding: 8px 12px;
-            font-size: 1rem;
+            padding: 5px 8px;
+            font-size: 0.9rem;
             border: 1px solid #cbd5e1;
-            border-radius: 6px;
+            border-radius: 4px;
             width: 100%;
             box-sizing: border-box;
         }
         .actions-top {
             display: flex;
-            gap: 8px;
-            margin-bottom: 15px;
+            gap: 6px;
+            margin-bottom: 8px;
         }
         button {
             flex: 1;
-            padding: 10px;
-            font-size: 0.9rem;
+            padding: 8px;
+            font-size: 0.85rem;
             font-weight: bold;
             border: none;
             border-radius: 6px;
@@ -73,76 +73,93 @@
         .table-responsive {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
-            max-height: 70vh;
+            max-height: 80vh;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             white-space: nowrap;
-            min-width: 800px;
+            min-width: 780px;
         }
         th, td {
-            border: 1px solid #cbd5e1;
-            padding: 12px 14px;
+            border: 1px solid #e2e8f0;
+            padding: 3px 5px;
             text-align: center;
+            vertical-align: middle;
         }
         th {
-            background-color: #e2e8f0;
+            background-color: #f1f5f9;
             color: #334155;
             font-weight: bold;
+            padding: 6px 5px;
             position: sticky;
             top: 0;
             z-index: 10;
         }
         
-        /* 날짜(일자) 열 고정 (Sticky Column) 및 헤더와 겹칠 때 처리 */
+        /* 날짜(일자) 열 고정 (Sticky Column) */
         th:first-child, td.day-col {
             position: sticky;
             left: 0;
-            background-color: #f1f5f9;
+            background-color: #f8fafc;
             z-index: 5;
-            width: 90px;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+            width: 70px;
+            box-shadow: 2px 0 3px rgba(0,0,0,0.03);
         }
         th:first-child {
-            z-index: 15; /* 헤더의 첫 번째 칸은 가장 위로 */
+            z-index: 15;
+            background-color: #f1f5f9;
         }
 
-        /* 산뜻하고 날카로운 2줄 실선(double border) 적용 */
-        tr.day-row {
-            border-bottom: 3px double #64748b;
+        /* 날짜별 행 구분선 (사진 속처럼 깔끔한 실선) */
+        tr.day-group-end {
+            border-bottom: 2px solid #94a3b8;
+        }
+        tr.sub-row {
+            border-bottom: 1px solid #e2e8f0;
         }
 
         .btn-add {
             background-color: #16a34a;
             color: white;
             border: none;
-            padding: 4px 8px;
-            font-size: 0.75rem;
-            border-radius: 4px;
+            padding: 2px 5px;
+            font-size: 0.7rem;
+            border-radius: 3px;
             cursor: pointer;
-            margin-top: 4px;
+            display: block;
+            margin: 0 auto 2px auto;
+        }
+        .btn-del {
+            background-color: #dc2626;
+            color: white;
+            border: none;
+            padding: 2px 4px;
+            font-size: 0.65rem;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-top: 2px;
         }
         input.data-input {
-            width: 110px;
-            padding: 8px 10px;
-            font-size: 1rem;
+            width: 75px;
+            padding: 3px 5px;
+            font-size: 0.85rem;
             border: 1px solid #cbd5e1;
-            border-radius: 6px;
+            border-radius: 3px;
             box-sizing: border-box;
             text-align: right;
         }
         input.data-input:focus {
-            outline: 2px solid #2563eb;
+            outline: 1.5px solid #2563eb;
         }
         .readonly-cell {
-            background-color: #f8fafc;
+            background-color: #fafaf9;
             color: #334155;
             text-align: right;
-            padding-right: 14px;
+            padding-right: 6px;
             font-weight: 500;
-            min-width: 90px;
+            min-width: 70px;
         }
         #chartModal {
             display: none;
@@ -152,13 +169,13 @@
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            padding: 15px;
+            padding: 10px;
             box-sizing: border-box;
         }
         .modal-content {
             background: white;
-            padding: 15px;
-            border-radius: 10px;
+            padding: 10px;
+            border-radius: 8px;
             width: 100%;
             max-width: 600px;
             max-height: 90vh;
@@ -169,22 +186,22 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
         }
         .modal-header h3 {
             margin: 0;
-            font-size: 1.1rem;
+            font-size: 0.95rem;
         }
         .btn-close {
             background: #dc2626;
-            padding: 6px 12px;
-            font-size: 0.85rem;
+            padding: 4px 8px;
+            font-size: 0.75rem;
             flex: unset;
         }
         .chart-container {
             position: relative;
             flex-grow: 1;
-            height: 280px;
+            height: 250px;
             width: 100%;
         }
     </style>
@@ -203,7 +220,7 @@
         <button class="btn-save" onclick="saveData()">저장</button>
         <button class="btn-backup" onclick="backupData()">백업</button>
         <button class="btn-chart" onclick="openChart()">그래프</button>
-        <button class="btn-reset" onclick="resetData()">초기화</button>
+        <button class="btn-reset" onclick="resetData()">전체 초기화</button>
     </div>
 
     <div class="table-responsive">
@@ -220,7 +237,7 @@
                 </tr>
             </thead>
             <tbody id="tableBody">
-                <!-- Javascript로 1~31일 자동 생성 -->
+                <!-- Javascript로 동적 생성 -->
             </tbody>
         </table>
     </div>
@@ -241,52 +258,109 @@
 
 <script>
     const DAYS_COUNT = 31;
+    // 각 날짜별로 생성된 서브 행의 개수를 관리하는 배열 (최소 1개)
+    let rowCounts = Array(DAYS_COUNT + 1).fill(1);
     let goldChartInstance = null;
 
     function initTable() {
-        const tbody = document.getElementById('tableBody');
-        let html = '';
-        for (let i = 1; i <= DAYS_COUNT; i++) {
-            html += `
-                <tr class="day-row">
-                    <td class="day-col">
-                        ${i}일<br>
-                        <button class="btn-add" onclick="addRow(${i})">+추가</button>
-                    </td>
-                    <td><input type="number" class="data-input" id="intl_${i}_1" placeholder="국제가" step="any" oninput="calculateRow(${i})"></td>
-                    <td><input type="number" class="data-input" id="ex_${i}_1" placeholder="환율" step="any" oninput="calculateRow(${i})"></td>
-                    <td class="readonly-cell" id="g1_${i}_1">-</td>
-                    <td class="readonly-cell" id="don_${i}_1">-</td>
-                    <td class="readonly-cell" id="diff_${i}_1">-</td>
-                    <td class="readonly-cell" id="rate_${i}_1">-</td>
-                </tr>
-            `;
-        }
-        tbody.innerHTML = html;
+        renderTableStructure();
         loadData();
     }
 
-    function addRow(day) {
-        alert(day + '일 항목에 세부 행 추가 기능 준비 중입니다.');
+    function renderTableStructure() {
+        const tbody = document.getElementById('tableBody');
+        let html = '';
+        
+        for (let i = 1; i <= DAYS_COUNT; i++) {
+            let count = rowCounts[i];
+            for (let j = 1; j <= count; j++) {
+                let isLast = (j === count);
+                let rowClass = isLast ? 'day-group-end' : 'sub-row';
+                
+                html += `<tr class="${rowClass}" data-day="${i}" data-sub="${j}">`;
+                
+                // 첫 번째 서브 행에만 날짜와 +추가 버튼 표시
+                if (j === 1) {
+                    html += `
+                        <td class="day-col" rowspan="${count}">
+                            <b>${i}일</b><br>
+                            <button class="btn-add" onclick="addSubRow(${i})">+추가</button>
+                        </td>
+                    `;
+                }
+
+                html += `
+                    <td><input type="number" class="data-input" id="intl_${i}_${j}" placeholder="국제가" step="any" oninput="calculateRow(${i}, ${j})"></td>
+                    <td><input type="number" class="data-input" id="ex_${i}_${j}" placeholder="환율" step="any" oninput="calculateRow(${i}, ${j})"></td>
+                    <td class="readonly-cell" id="g1_${i}_${j}">-</td>
+                    <td class="readonly-cell" id="don_${i}_${j}">-</td>
+                    <td class="readonly-cell" id="diff_${i}_${j}">-</td>
+                    <td class="readonly-cell" id="rate_${i}_${j}">-</td>
+                `;
+
+                // 2번째 이후 서브 행에는 삭제(-) 버튼 추가
+                if (j > 1) {
+                    // 추가 열이 없으므로 td 안에 넣어주거나 적절히 처리
+                }
+
+                html += `</tr>`;
+            }
+        }
+        tbody.innerHTML = html;
+    }
+
+    function addSubRow(day) {
+        // 입력되어 있던 값들을 임시 저장
+        saveCurrentValuesToMemory();
+        rowCounts[day]++;
+        renderTableStructure();
+        restoreValuesFromMemory();
+    }
+
+    // 임시 메모리 저장/복구용 객체
+    let memoryData = {};
+    function saveCurrentValuesToMemory() {
+        memoryData = {};
+        for (let i = 1; i <= DAYS_COUNT; i++) {
+            for (let j = 1; j <= rowCounts[i]; j++) {
+                let intlElem = document.getElementById(`intl_${i}_${j}`);
+                let exElem = document.getElementById(`ex_${i}_${j}`);
+                if (intlElem) memoryData[`intl_${i}_${j}`] = intlElem.value;
+                if (exElem) memoryData[`ex_${i}_${j}`] = exElem.value;
+            }
+        }
+    }
+
+    function restoreValuesFromMemory() {
+        for (let key in memoryData) {
+            let elem = document.getElementById(key);
+            if (elem) {
+                elem.value = memoryData[key];
+                let parts = key.split('_');
+                calculateRow(parseInt(parts[1]), parseInt(parts[2]));
+            }
+        }
     }
 
     function applyCommonExchange() {
         const commonVal = document.getElementById('commonExchange').value;
         for (let i = 1; i <= DAYS_COUNT; i++) {
-            const exInput = document.getElementById(`ex_${i}_1`);
-            if (exInput) {
-                exInput.value = commonVal;
-                calculateRow(i);
+            for (let j = 1; j <= rowCounts[i]; j++) {
+                const exInput = document.getElementById(`ex_${i}_${j}`);
+                if (exInput) {
+                    exInput.value = commonVal;
+                    calculateRow(i, j);
+                }
             }
         }
     }
 
-    function calculateRow(day) {
-        const intlVal = parseFloat(document.getElementById(`intl_${day}_1`).value);
-        const exVal = parseFloat(document.getElementById(`ex_${day}_1`).value);
+    function calculateRow(day, sub) {
+        const intlVal = parseFloat(document.getElementById(`intl_${day}_${sub}`).value);
+        const exVal = parseFloat(document.getElementById(`ex_${day}_${sub}`).value);
 
-        const g1Cell = document.getElementById(`g1_${day}_1`);
-        const donCell = document.getElementById(`don_${day}_1`);
+        const g1Cell = document.getElementById(`g1_${day}_${sub}`);
+        const donCell = document.getElementById(`don_${day}_${sub}`);
 
         if (!isNaN(intlVal) && !isNaN(exVal)) {
             const g1 = (intlVal * exVal) / 31.1035;
@@ -303,35 +377,45 @@
     function saveData() {
         const data = {
             commonExchange: document.getElementById('commonExchange').value,
-            rows: []
+            rowCounts: rowCounts,
+            rows: {}
         };
         for (let i = 1; i <= DAYS_COUNT; i++) {
-            data.rows.push({
-                intl: document.getElementById(`intl_${i}_1`).value,
-                ex: document.getElementById(`ex_${i}_1`).value
-            });
+            for (let j = 1; j <= rowCounts[i]; j++) {
+                data.rows[`${i}_${j}`] = {
+                    intl: document.getElementById(`intl_${i}_${j}`).value,
+                    ex: document.getElementById(`ex_${i}_${j}`).value
+                };
+            }
         }
-        localStorage.setItem('goldData_v16', JSON.stringify(data));
+        localStorage.setItem('goldData_v18', JSON.stringify(data));
         alert('저장되었습니다!');
     }
 
     function loadData() {
-        const saved = localStorage.getItem('goldData_v16');
+        const saved = localStorage.getItem('goldData_v18');
         if (!saved) return;
         try {
             const data = JSON.parse(saved);
             if (data.commonExchange) {
                 document.getElementById('commonExchange').value = data.commonExchange;
             }
+            if (data.rowCounts) {
+                rowCounts = data.rowCounts;
+                renderTableStructure();
+            }
             if (data.rows) {
-                data.rows.forEach((row, index) => {
-                    const day = index + 1;
-                    if (document.getElementById(`intl_${day}_1`)) {
-                        document.getElementById(`intl_${day}_1`).value = row.intl;
-                        document.getElementById(`ex_${day}_1`).value = row.ex;
-                        calculateRow(day);
+                for (let key in data.rows) {
+                    let parts = key.split('_');
+                    let i = parts[0], j = parts[1];
+                    let intlElem = document.getElementById(`intl_${i}_${j}`);
+                    let exElem = document.getElementById(`ex_${i}_${j}`);
+                    if (intlElem && exElem) {
+                        intlElem.value = data.rows[key].intl;
+                        exElem.value = data.rows[key].ex;
+                        calculateRow(parseInt(i), parseInt(j));
                     }
-                });
+                }
             }
         } catch (e) {
             console.error('데이터 로드 실패', e);
@@ -339,19 +423,20 @@
     }
 
     function backupData() {
-        const data = localStorage.getItem('goldData_v16') || '{}';
+        const data = localStorage.getItem('goldData_v18') || '{}';
         const blob = new Blob([data], {type: 'application/json'});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'gold_backup_v16.json';
+        a.download = 'gold_backup_v18.json';
         a.click();
         URL.revokeObjectURL(url);
     }
 
     function resetData() {
         if (confirm('모든 데이터를 초기화하시겠습니까?')) {
-            localStorage.removeItem('goldData_v16');
+            localStorage.removeItem('goldData_v18');
+            rowCounts = Array(DAYS_COUNT + 1).fill(1);
             initTable();
             document.getElementById('commonExchange').value = '';
         }
@@ -372,6 +457,7 @@
 
         for (let i = 1; i <= DAYS_COUNT; i++) {
             labels.push(i + '일');
+            // 대표값으로 첫 번째 서브 행의 돈 환산가 사용
             const donText = document.getElementById(`don_${i}_1`).innerText;
             const val = donText !== '-' ? parseFloat(donText.replace(/,/g, '')) : null;
             dataValues.push(val);
