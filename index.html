@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>킷코 금시세 실시간 일지 v17.1</title>
+    <title>킷코 금시세 실시간 일지 (v16 Original)</title>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -18,40 +18,40 @@
             font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
             background-color: var(--bg-color);
             margin: 0;
-            padding: 8px;
+            padding: 10px;
             color: #1c293b;
         }
         .container {
             max-width: 1200px;
             margin: 0 auto;
             background: #ffffff;
-            padding: 12px;
-            border-radius: 10px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         }
         h1 {
             text-align: center;
-            font-size: 1.25rem;
-            margin: 6px 0 12px 0;
+            font-size: 1.4rem;
+            margin-bottom: 15px;
             color: #0f172a;
         }
         .common-controls {
             background: #f1f5f9;
-            padding: 10px;
+            padding: 12px;
             border-radius: 8px;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             display: flex;
             flex-direction: column;
             gap: 6px;
         }
         .common-controls label {
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             font-weight: bold;
             color: #334155;
         }
         .common-controls input {
-            padding: 6px 8px;
-            font-size: 0.95rem;
+            padding: 8px 12px;
+            font-size: 1rem;
             border: 1px solid var(--border-color);
             border-radius: 6px;
             width: 100%;
@@ -59,13 +59,13 @@
         }
         .actions-top {
             display: flex;
-            gap: 6px;
-            margin-bottom: 10px;
+            gap: 8px;
+            margin-bottom: 15px;
         }
         button {
             flex: 1;
-            padding: 8px 6px;
-            font-size: 0.85rem;
+            padding: 10px;
+            font-size: 0.9rem;
             font-weight: bold;
             border: none;
             border-radius: 6px;
@@ -83,43 +83,42 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.82rem;
+            font-size: 0.9rem;
             white-space: nowrap;
         }
         th, td {
             border: 1px solid var(--border-color);
-            padding: 6px 6px;
+            padding: 8px;
             text-align: center;
         }
         th {
             background-color: #e2e8f0;
-            color: #1e293b;
+            color: #334155;
             font-weight: bold;
-            padding: 8px 6px;
         }
-        /* 날짜별 행 구분감을 주기 위한 스타일 (굵은 하단 테두리) */
+        /* 날짜별 행 구분선 (뚜렷하게 구분되도록) */
         tr.day-row {
-            border-bottom: 2px solid #94a3b8;
+            border-bottom: 3px solid #94a3b8;
         }
         .day-col {
             background-color: #f1f5f9;
             font-weight: bold;
-            width: 60px;
+            width: 70px;
         }
         .btn-add {
             background-color: var(--success-color);
             color: white;
             border: none;
             padding: 3px 6px;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             border-radius: 4px;
             cursor: pointer;
-            margin-top: 3px;
+            margin-top: 4px;
         }
         input.data-input {
             width: 100%;
-            padding: 5px 6px;
-            font-size: 0.85rem;
+            padding: 6px 8px;
+            font-size: 0.95rem;
             border: 1px solid var(--border-color);
             border-radius: 4px;
             box-sizing: border-box;
@@ -130,10 +129,9 @@
         }
         .readonly-cell {
             background-color: #f8fafc;
-            color: #334155;
+            color: #475569;
             text-align: right;
             padding-right: 8px;
-            font-weight: 500;
         }
         #chartModal {
             display: none;
@@ -143,12 +141,12 @@
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            padding: 12px;
+            padding: 15px;
             box-sizing: border-box;
         }
         .modal-content {
             background: white;
-            padding: 12px;
+            padding: 15px;
             border-radius: 10px;
             width: 100%;
             max-width: 600px;
@@ -160,22 +158,22 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
         .modal-header h3 {
             margin: 0;
-            font-size: 1rem;
+            font-size: 1.1rem;
         }
         .btn-close {
             background: var(--danger-color);
-            padding: 4px 10px;
-            font-size: 0.8rem;
+            padding: 6px 12px;
+            font-size: 0.85rem;
             flex: unset;
         }
         .chart-container {
             position: relative;
             flex-grow: 1;
-            height: 260px;
+            height: 280px;
             width: 100%;
         }
     </style>
@@ -183,7 +181,7 @@
 <body>
 
 <div class="container">
-    <h1>킷코 금시세 실시간 일지 (v17.1)</h1>
+    <h1>킷코 금시세 실시간 일지</h1>
 
     <div class="common-controls">
         <label for="commonExchange">공통 적용 환율:</label>
@@ -201,7 +199,7 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width: 60px;">일자</th>
+                    <th style="width: 70px;">일자</th>
                     <th>국제가</th>
                     <th>환율</th>
                     <th>1g원화</th>
@@ -302,12 +300,12 @@
                 ex: document.getElementById(`ex_${i}_1`).value
             });
         }
-        localStorage.setItem('goldData_v17', JSON.stringify(data));
+        localStorage.setItem('goldData_v16', JSON.stringify(data));
         alert('저장되었습니다!');
     }
 
     function loadData() {
-        const saved = localStorage.getItem('goldData_v17');
+        const saved = localStorage.getItem('goldData_v16');
         if (!saved) return;
         try {
             const data = JSON.parse(saved);
@@ -330,19 +328,19 @@
     }
 
     function backupData() {
-        const data = localStorage.getItem('goldData_v17') || '{}';
+        const data = localStorage.getItem('goldData_v16') || '{}';
         const blob = new Blob([data], {type: 'application/json'});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'gold_backup_v17.json';
+        a.download = 'gold_backup_v16.json';
         a.click();
         URL.revokeObjectURL(url);
     }
 
     function resetData() {
         if (confirm('모든 데이터를 초기화하시겠습니까?')) {
-            localStorage.removeItem('goldData_v17');
+            localStorage.removeItem('goldData_v16');
             initTable();
             document.getElementById('commonExchange').value = '';
         }
