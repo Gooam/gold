@@ -3,20 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>킷코 금시세 실시간 일지 (v16 Original)</title>
+    <title>킷코 금시세 실시간 일지</title>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root {
-            --primary-color: #2563eb;
-            --success-color: #16a34a;
-            --danger-color: #dc2626;
-            --bg-color: #f8fafc;
-            --border-color: #cbd5e1;
-        }
         body {
             font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
-            background-color: var(--bg-color);
+            background-color: #f8fafc;
             margin: 0;
             padding: 10px;
             color: #1c293b;
@@ -52,7 +45,7 @@
         .common-controls input {
             padding: 8px 12px;
             font-size: 1rem;
-            border: 1px solid var(--border-color);
+            border: 1px solid #cbd5e1;
             border-radius: 6px;
             width: 100%;
             box-sizing: border-box;
@@ -72,23 +65,25 @@
             cursor: pointer;
             color: white;
         }
-        .btn-save { background-color: var(--primary-color); }
-        .btn-backup { background-color: var(--success-color); }
+        .btn-save { background-color: #2563eb; }
+        .btn-backup { background-color: #16a34a; }
         .btn-chart { background-color: #9333ea; }
-        .btn-reset { background-color: var(--danger-color); }
+        .btn-reset { background-color: #dc2626; }
 
         .table-responsive {
             overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             white-space: nowrap;
+            min-width: 750px; /* 옛날처럼 가로 스크롤이 시원하게 생기도록 확보 */
         }
         th, td {
-            border: 1px solid var(--border-color);
-            padding: 8px;
+            border: 1px solid #cbd5e1;
+            padding: 10px 12px;
             text-align: center;
         }
         th {
@@ -96,20 +91,20 @@
             color: #334155;
             font-weight: bold;
         }
-        /* 날짜별 행 구분선 (뚜렷하게 구분되도록) */
+        /* 날짜별 행 구분선 (산뜻하고 뚜렷하게) */
         tr.day-row {
             border-bottom: 3px solid #94a3b8;
         }
         .day-col {
             background-color: #f1f5f9;
             font-weight: bold;
-            width: 70px;
+            width: 80px;
         }
         .btn-add {
-            background-color: var(--success-color);
+            background-color: #16a34a;
             color: white;
             border: none;
-            padding: 3px 6px;
+            padding: 4px 8px;
             font-size: 0.75rem;
             border-radius: 4px;
             cursor: pointer;
@@ -117,21 +112,22 @@
         }
         input.data-input {
             width: 100%;
-            padding: 6px 8px;
-            font-size: 0.95rem;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
+            padding: 8px 10px;
+            font-size: 1rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
             box-sizing: border-box;
             text-align: right;
         }
         input.data-input:focus {
-            outline: 2px solid var(--primary-color);
+            outline: 2px solid #2563eb;
         }
         .readonly-cell {
             background-color: #f8fafc;
-            color: #475569;
+            color: #334155;
             text-align: right;
-            padding-right: 8px;
+            padding-right: 12px;
+            font-weight: 500;
         }
         #chartModal {
             display: none;
@@ -165,7 +161,7 @@
             font-size: 1.1rem;
         }
         .btn-close {
-            background: var(--danger-color);
+            background: #dc2626;
             padding: 6px 12px;
             font-size: 0.85rem;
             flex: unset;
@@ -199,7 +195,7 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width: 70px;">일자</th>
+                    <th style="width: 80px;">일자</th>
                     <th>국제가</th>
                     <th>환율</th>
                     <th>1g원화</th>
