@@ -30,12 +30,12 @@
         }
         .common-controls {
             background: #f1f5f9;
-            padding: 3px 5px;
+            padding: 2px 4px;
             border-radius: 4px;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
             display: flex;
             flex-direction: column;
-            gap: 2px;
+            gap: 1px;
         }
         .common-controls label {
             font-size: 0.7rem;
@@ -49,12 +49,12 @@
             border-radius: 3px;
             width: 100%;
             box-sizing: border-box;
-            height: 22px;
+            height: 20px;
         }
         .actions-top {
             display: flex;
-            gap: 4px;
-            margin-bottom: 4px;
+            gap: 3px;
+            margin-bottom: 3px;
         }
         button {
             flex: 1;
@@ -85,20 +85,22 @@
         }
         th, td {
             border: 1px solid #e2e8f0;
-            padding: 0px 1px; /* 행 간격을 극도로 바짝 좁힘 */
+            padding: 0px !important; /* 모바일 강제 패딩 제거 */
+            margin: 0 !important;
             text-align: center;
             vertical-align: middle;
-            height: 18px; /* 행 높이 강제 압축 */
+            height: 16px !important; /* 행 높이 극단적 압축 */
+            line-height: 16px !important;
         }
         th {
             background-color: #f1f5f9;
             color: #334155;
             font-weight: bold;
-            padding: 2px 1px;
+            padding: 1px 0px !important;
             position: sticky;
             top: 0;
             z-index: 10;
-            height: 20px;
+            height: 18px !important;
         }
         
         /* 날짜(일자) 열 고정 (Sticky Column) */
@@ -107,9 +109,9 @@
             left: 0;
             background-color: #f8fafc;
             z-index: 5;
-            width: 55px;
+            width: 50px;
             box-shadow: 2px 0 3px rgba(0,0,0,0.03);
-            padding: 0;
+            padding: 0 !important;
         }
         th:first-child {
             z-index: 15;
@@ -127,41 +129,47 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 3px;
-            height: 18px;
+            padding: 0 2px;
+            height: 16px;
         }
 
         .btn-add {
             background-color: #16a34a;
             color: white;
             border: none;
-            padding: 0px 2px;
-            font-size: 0.5rem;
+            padding: 0px 1px;
+            font-size: 0.45rem;
             border-radius: 2px;
             cursor: pointer;
+            height: 14px;
+            line-height: 14px;
         }
         .btn-del {
             background-color: #dc2626;
             color: white;
             border: none;
-            padding: 0px 2px;
-            font-size: 0.5rem;
+            padding: 0px 1px;
+            font-size: 0.45rem;
             border-radius: 2px;
             cursor: pointer;
+            height: 14px;
+            line-height: 14px;
         }
         input.data-input {
             width: 100%;
-            padding: 0px 2px;
+            padding: 0px 2px !important;
+            margin: 0 !important;
             font-size: 0.75rem;
-            border: 1px solid #cbd5e1;
-            border-radius: 2px;
+            border: none; /* 테두리를 없애서 셀과 완전히 일체화 */
+            background: transparent;
             box-sizing: border-box;
             text-align: right;
-            height: 18px; /* 입력창 높이 극단적 축소 */
-            line-height: 18px;
+            height: 16px !important;
+            line-height: 16px !important;
         }
         input.data-input:focus {
-            outline: 1px solid #2563eb;
+            outline: 1.5px solid #2563eb;
+            background: #ffffff;
         }
         
         /* 1g원화, 돈(3.75g) 시세는 레드(Red) 색상 */
@@ -169,22 +177,24 @@
             background-color: #f8fafc;
             color: #dc2626;
             text-align: right;
-            padding-right: 3px;
+            padding-right: 3px !important;
             font-weight: 600;
             min-width: 65px;
-            height: 18px;
+            height: 16px !important;
             font-size: 0.75rem;
+            line-height: 16px !important;
         }
         /* 차액도 레드(Red) 색상 */
         .red-diff-cell {
             background-color: #f8fafc;
             color: #dc2626;
             text-align: right;
-            padding-right: 3px;
+            padding-right: 3px !important;
             font-weight: 600;
             min-width: 65px;
-            height: 18px;
+            height: 16px !important;
             font-size: 0.75rem;
+            line-height: 16px !important;
         }
 
         #chartModal {
@@ -325,7 +335,7 @@
                     <td class="red-diff-cell" id="diff_${i}_${j}">-</td>
                     <td>
                         <div style="display: flex; gap: 1px; align-items: center; justify-content: center;">
-                            <input type="number" class="data-input" id="memo_${i}_${j}" placeholder="자료금" step="1">
+                            <input type="number" class="data-input" id="memo_${i}_${j}" placeholder="자료금" step="1" style="flex:1;">
                             ${j > 1 ? `<button class="btn-del" onclick="removeSubRow(${i},${j})">삭제</button>` : ''}
                         </div>
                     </td>
@@ -464,12 +474,12 @@
                 };
             }
         }
-        localStorage.setItem('goldData_v23', JSON.stringify(data));
+        localStorage.setItem('goldData_v24', JSON.stringify(data));
         alert('저장되었습니다!');
     }
 
     function loadData() {
-        const saved = localStorage.getItem('goldData_v23');
+        const saved = localStorage.getItem('goldData_v24');
         if (!saved) return;
         try {
             const data = JSON.parse(saved);
@@ -504,19 +514,19 @@
     }
 
     function backupData() {
-        const data = localStorage.getItem('goldData_v23') || '{}';
+        const data = localStorage.getItem('goldData_v24') || '{}';
         const blob = new Blob([data], {type: 'application/json'});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'gold_backup_v23.json';
+        a.download = 'gold_backup_v24.json';
         a.click();
         URL.revokeObjectURL(url);
     }
 
     function resetData() {
         if (confirm('모든 데이터를 초기화하시겠습니까?')) {
-            localStorage.removeItem('goldData_v23');
+            localStorage.removeItem('goldData_v24');
             rowCounts = Array(DAYS_COUNT + 1).fill(1);
             initTable();
             document.getElementById('commonExchange').value = '';
