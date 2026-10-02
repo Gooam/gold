@@ -85,7 +85,7 @@
         }
         th, td {
             border: 1px solid #e2e8f0;
-            padding: 2px 3px; /* 쾌적하고 슬림한 행 높이 */
+            padding: 2px 3px;
             text-align: center;
             vertical-align: middle;
             height: 24px;
@@ -100,7 +100,7 @@
             z-index: 10;
         }
         
-        /* 날짜(일자) 열 고정 (Sticky Column) - 좌우 배치로 높이 압축 */
+        /* 날짜(일자) 열 고정 (Sticky Column) */
         th:first-child, td.day-col {
             position: sticky;
             left: 0;
@@ -149,7 +149,6 @@
             cursor: pointer;
         }
         
-        /* 6자리 금액이 딱 예쁘게 들어가는 최적의 너비 (약간 슬림하게 조정) */
         input.data-input {
             width: 76px;
             padding: 2px 4px;
@@ -165,7 +164,6 @@
             background: #ffffff;
         }
         
-        /* 1g원화, 돈(3.75g) 시세는 레드(Red) 색상 */
         .red-readonly-cell {
             background-color: #f8fafc;
             color: #dc2626;
@@ -175,7 +173,6 @@
             min-width: 76px;
             font-size: 0.8rem;
         }
-        /* 차액도 레드(Red) 색상 */
         .red-diff-cell {
             background-color: #f8fafc;
             color: #dc2626;
@@ -238,7 +235,7 @@
 
     <div class="common-controls">
         <label for="commonExchange">공통 적용 환율:</label>
-        <input type="number" id="commonExchange" placeholder="예: 1,380" step="1" oninput="applyCommonExchange()">
+        <input type="text" id="commonExchange" placeholder="예: 1,380" oninput="formatInput(this)" onblur="applyCommonExchange()">
     </div>
 
     <div class="actions-top">
@@ -287,6 +284,40 @@
     let rowCounts = Array(DAYS_COUNT + 1).fill(1);
     let goldChartInstance = null;
 
+    // 숫자만 추출하여 천단위 콤마 포맷팅 적용
+    function formatNumber(val) {
+        if (!val) return '';
+        const num = val.toString().replace(/[^\d]/g, '');
+        if (!num) return '';
+        return parseInt(num, 10).toLocaleString();
+    }
+
+    function parseNumber(val) {
+        if (!val) return NaN;
+        const num = val.toString().replace(/,/g, '');
+        return parseFloat(num);
+    }
+
+    function handleInputFormatting(inputElem, callback) {
+        let cursorPosition = inputElem.selectionStart;
+        let originalLength = inputElem.value.length;
+        
+        let rawVal = inputElem.value.replace(/[^\d]/g, '');
+        if (rawVal) {
+            inputElem.value = parseInt(rawVal, 10).toLocaleString();
+        } else {
+            inputElem.value = '';
+        }
+        
+        let newLength = inputElem.value.length;
+        cursorPosition = Math.max(0, cursorPosition + (newLength - originalLength));
+        try {
+            inputElem.setSelectionRange(cursorPosition, cursorPosition);
+        } catch (e) {}
+
+        if (callback) callback();
+    }
+
     function initTable() {
         renderTableStructure();
         loadData();
@@ -316,15 +347,15 @@
                 }
 
                 html += `
-                    <td><input type="number" class="data-input" id="intl_${i}_${j}" placeholder="국제가" step="1" oninput="calculateRow(${i}, ${j})"></td>
-                    <td><input type="number" class="data-input" id="ex_${i}_${j}" placeholder="환율" step="1" oninput="calculateRow(${i}, ${j})"></td>
+                    <td><input type="text" inputmode="numeric" class="data-input" id="intl_${i}_${j}" placeholder="국제가" oninput="handleInputFormatting(this, () => calculateRow(${i}, ${j}))"></td>
+                    <td><input type="text" inputmode="numeric" class="data-input" id="ex_${i}_${j}" placeholder="환율" oninput="handleInputFormatting(this, () => calculateRow(${i}, ${j}))"></td>
                     <td class="red-readonly-cell" id="g1_${i}_${j}">-</td>
                     <td class="red-readonly-cell" id="don_${i}_${j}">-</td>
-                    <td><input type="number" class="data-input" id="jong_${i}_${j}" placeholder="종로" step="1" oninput="calculateDiff(${i}, ${j})"></td>
+                    <td><input type="text" inputmode="numeric" class="data-input" id="jong_${i}_${j}" placeholder="종로" oninput="handleInputFormatting(this, () => calculateDiff(${i}, ${j}))"></td>
                     <td class="red-diff-cell" id="diff_${i}_${j}">-</td>
                     <td>
                         <div style="display: flex; gap: 2px; align-items: center; justify-content: center;">
-                            <input type="number" class="data-input" id="memo_${i}_${j}" placeholder="자료금" step="1" style="width: 76px;">
+                            <input type="text" inputmode="numeric" class="data-input" id="memo_${i}_${j}" placeholder="자료금" oninput="handleInputFormatting(this)" style="width: 76px;">
                             ${j > 1 ? `<button class="btn-del" onclick="removeSubRow(${i},${j})">삭제</button>` : ''}
                         </div>
                     </td>
@@ -395,12 +426,16 @@
     }
 
     function applyCommonExchange() {
-        const commonVal = parseFloat(document.getElementById('commonExchange').value);
+        const commonInput = document.getElementById('commonExchange');
+        const commonVal = parseNumber(commonInput.value);
+        if(!isNaN(commonVal)) {
+            commonInput.value = commonVal.toLocaleString();
+        }
         for (let i = 1; i <= DAYS_COUNT; i++) {
             for (let j = 1; j <= rowCounts[i]; j++) {
                 const exInput = document.getElementById(`ex_${i}_${j}`);
                 if (exInput) {
-                    exInput.value = !isNaN(commonVal) ? Math.round(commonVal) : '';
+                    exInput.value = !isNaN(commonVal) ? Math.round(commonVal).toLocaleString() : '';
                     calculateRow(i, j);
                 }
             }
@@ -408,8 +443,8 @@
     }
 
     function calculateRow(day, sub) {
-        const intlVal = parseFloat(document.getElementById(`intl_${day}_${sub}`).value);
-        const exVal = parseFloat(document.getElementById(`ex_${day}_${sub}`).value);
+        const intlVal = parseNumber(document.getElementById(`intl_${day}_${sub}`).value);
+        const exVal = parseNumber(document.getElementById(`ex_${day}_${sub}`).value);
 
         const g1Cell = document.getElementById(`g1_${day}_${sub}`);
         const donCell = document.getElementById(`don_${day}_${sub}`);
@@ -432,10 +467,10 @@
     function calculateDiff(day, sub, precalculatedDon = null) {
         const donText = precalculatedDon !== null ? precalculatedDon : (() => {
             const el = document.getElementById(`don_${day}_${sub}`);
-            return el && el.innerText !== '-' ? parseFloat(el.innerText.replace(/,/g, '')) : NaN;
+            return el && el.innerText !== '-' ? parseNumber(el.innerText) : NaN;
         })();
         
-        const jongVal = parseFloat(document.getElementById(`jong_${day}_${sub}`).value);
+        const jongVal = parseNumber(document.getElementById(`jong_${day}_${sub}`).value);
         const diffCell = document.getElementById(`diff_${day}_${sub}`);
 
         if (!isNaN(donText) && !isNaN(jongVal)) {
@@ -463,12 +498,12 @@
                 };
             }
         }
-        localStorage.setItem('goldData_v26', JSON.stringify(data));
+        localStorage.setItem('goldData_v27', JSON.stringify(data));
         alert('저장되었습니다!');
     }
 
     function loadData() {
-        const saved = localStorage.getItem('goldData_v26');
+        const saved = localStorage.getItem('goldData_v27');
         if (!saved) return;
         try {
             const data = JSON.parse(saved);
@@ -503,19 +538,19 @@
     }
 
     function backupData() {
-        const data = localStorage.getItem('goldData_v26') || '{}';
+        const data = localStorage.getItem('goldData_v27') || '{}';
         const blob = new Blob([data], {type: 'application/json'});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'gold_backup_v26.json';
+        a.download = 'gold_backup_v27.json';
         a.click();
         URL.revokeObjectURL(url);
     }
 
     function resetData() {
         if (confirm('모든 데이터를 초기화하시겠습니까?')) {
-            localStorage.removeItem('goldData_v26');
+            localStorage.removeItem('goldData_v27');
             rowCounts = Array(DAYS_COUNT + 1).fill(1);
             initTable();
             document.getElementById('commonExchange').value = '';
@@ -538,7 +573,7 @@
         for (let i = 1; i <= DAYS_COUNT; i++) {
             labels.push(i + '일');
             const donText = document.getElementById(`don_${i}_1`).innerText;
-            const val = donText !== '-' ? parseFloat(donText.replace(/,/g, '')) : null;
+            const val = donText !== '-' ? parseNumber(donText) : null;
             dataValues.push(val);
         }
 
