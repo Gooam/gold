@@ -296,7 +296,7 @@
     const DAYS_COUNT = 31;
     let rowCounts = Array(DAYS_COUNT + 1).fill(1);
     let goldChartInstance = null;
-    const STORAGE_KEY = 'goldData_v34';
+    const STORAGE_KEY = 'goldData_v35';
 
     function parseNumber(val) {
         if (!val) return NaN;
@@ -328,7 +328,7 @@
 
     function updateInputTime(day, sub) {
         const timeCell = document.getElementById(`time_${day}_${sub}`);
-        if (timeCell && !timeCell.innerText || timeCell.innerText === '-') {
+        if (timeCell && (!timeCell.innerText || timeCell.innerText === '-')) {
             const now = new Date();
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
