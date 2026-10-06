@@ -296,7 +296,7 @@
     const DAYS_COUNT = 31;
     let rowCounts = Array(DAYS_COUNT + 1).fill(1);
     let goldChartInstance = null;
-    const STORAGE_KEY = 'goldData_v33';
+    const STORAGE_KEY = 'goldData_v34';
 
     function parseNumber(val) {
         if (!val) return NaN;
@@ -304,20 +304,17 @@
         return parseFloat(num);
     }
 
-    function triggerInputHandler(inputElem, callback, day, sub) {
-        handleInputFormatting(inputElem, callback);
-        updateInputTime(day, sub);
-    }
-
-    function handleInputFormatting(inputElem, callback) {
+    function handleInputFormatting(inputElem, callback, day, sub) {
         let cursorPosition = inputElem.selectionStart;
         let originalLength = inputElem.value.length;
         
         let rawVal = inputElem.value.replace(/[^\d]/g, '');
         if (rawVal) {
             inputElem.value = parseInt(rawVal, 10).toLocaleString();
+            updateInputTime(day, sub);
         } else {
             inputElem.value = '';
+            checkRowEmpty(day, sub);
         }
         
         let newLength = inputElem.value.length;
@@ -331,11 +328,22 @@
 
     function updateInputTime(day, sub) {
         const timeCell = document.getElementById(`time_${day}_${sub}`);
-        if (timeCell && (!timeCell.innerText || timeCell.innerText === '-')) {
+        if (timeCell && !timeCell.innerText || timeCell.innerText === '-') {
             const now = new Date();
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
             timeCell.innerText = `${hours}:${minutes}`;
+        }
+    }
+
+    function checkRowEmpty(day, sub) {
+        const intl = document.getElementById(`intl_${day}_${sub}`).value;
+        const ex = document.getElementById(`ex_${day}_${sub}`).value;
+        const jong = document.getElementById(`jong_${day}_${sub}`).value;
+        const memo = document.getElementById(`memo_${day}_${sub}`).value;
+        if (!intl && !ex && !jong && !memo) {
+            const timeCell = document.getElementById(`time_${day}_${sub}`);
+            if (timeCell) timeCell.innerText = '-';
         }
     }
 
@@ -368,15 +376,15 @@
                 }
 
                 html += `
-                    <td><input type="text" inputmode="numeric" class="data-input" id="intl_${i}_${j}" placeholder="국제가" oninput="triggerInputHandler(this, () => calculateRow(${i}, ${j}), ${i}, ${j})"></td>
-                    <td><input type="text" inputmode="numeric" class="data-input" id="ex_${i}_${j}" placeholder="환율" oninput="triggerInputHandler(this, () => calculateRow(${i}, ${j}), ${i}, ${j})"></td>
+                    <td><input type="text" inputmode="numeric" class="data-input" id="intl_${i}_${j}" placeholder="국제가" oninput="handleInputFormatting(this, () => calculateRow(${i}, ${j}), ${i}, ${j})"></td>
+                    <td><input type="text" inputmode="numeric" class="data-input" id="ex_${i}_${j}" placeholder="환율" oninput="handleInputFormatting(this, () => calculateRow(${i}, ${j}), ${i}, ${j})"></td>
                     <td class="red-readonly-cell" id="g1_${i}_${j}">-</td>
                     <td class="red-readonly-cell" id="don_${i}_${j}">-</td>
-                    <td><input type="text" inputmode="numeric" class="data-input" id="jong_${i}_${j}" placeholder="종로" oninput="triggerInputHandler(this, () => calculateDiff(${i}, ${j}), ${i}, ${j})"></td>
+                    <td><input type="text" inputmode="numeric" class="data-input" id="jong_${i}_${j}" placeholder="종로" oninput="handleInputFormatting(this, () => calculateDiff(${i}, ${j}), ${i}, ${j})"></td>
                     <td class="red-diff-cell" id="diff_${i}_${j}">-</td>
                     <td>
                         <div style="display: flex; gap: 2px; align-items: center; justify-content: center;">
-                            <input type="text" inputmode="numeric" class="data-input" id="memo_${i}_${j}" placeholder="자료금" oninput="triggerInputHandler(this, null, ${i}, ${j})" style="width: 76px;">
+                            <input type="text" inputmode="numeric" class="data-input" id="memo_${i}_${j}" placeholder="자료금" oninput="handleInputFormatting(this, null, ${i}, ${j})" style="width: 76px;">
                             ${j > 1 ? `<button class="btn-del" onclick="removeSubRow(${i},${j})">삭제</button>` : ''}
                         </div>
                     </td>
