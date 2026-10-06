@@ -68,6 +68,7 @@
         }
         .btn-save { background-color: #2563eb; }
         .btn-backup { background-color: #16a34a; }
+        .btn-restore { background-color: #0d9488; }
         .btn-chart { background-color: #9333ea; }
         .btn-reset { background-color: #dc2626; }
 
@@ -81,7 +82,7 @@
             border-collapse: collapse;
             font-size: 0.8rem;
             white-space: nowrap;
-            min-width: 780px;
+            min-width: 860px;
         }
         th, td {
             border: 1px solid #e2e8f0;
@@ -182,6 +183,13 @@
             min-width: 76px;
             font-size: 0.8rem;
         }
+        .time-cell {
+            background-color: #f8fafc;
+            color: #475569;
+            text-align: center;
+            font-size: 0.75rem;
+            min-width: 65px;
+        }
 
         #chartModal {
             display: none;
@@ -196,10 +204,10 @@
         }
         .modal-content {
             background: white;
-            padding: 10px;
-            border-radius: 6px;
+            padding: 12px;
+            border-radius: 8px;
             width: 100%;
-            max-width: 600px;
+            max-width: 650px;
             max-height: 90vh;
             display: flex;
             flex-direction: column;
@@ -208,22 +216,23 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 4px;
+            margin-bottom: 8px;
         }
         .modal-header h3 {
             margin: 0;
-            font-size: 0.95rem;
+            font-size: 1rem;
+            color: #0f172a;
         }
         .btn-close {
             background: #dc2626;
-            padding: 3px 6px;
-            font-size: 0.7rem;
+            padding: 4px 8px;
+            font-size: 0.75rem;
             flex: unset;
         }
         .chart-container {
             position: relative;
             flex-grow: 1;
-            height: 240px;
+            height: 300px;
             width: 100%;
         }
     </style>
@@ -235,15 +244,18 @@
 
     <div class="common-controls">
         <label for="commonExchange">공통 적용 환율:</label>
-        <input type="text" id="commonExchange" placeholder="예: 1,380" oninput="formatInput(this)" onblur="applyCommonExchange()">
+        <input type="text" id="commonExchange" placeholder="예: 1,380" oninput="handleInputFormatting(this)" onblur="applyCommonExchange()">
     </div>
 
     <div class="actions-top">
         <button class="btn-save" onclick="saveData()">저장</button>
         <button class="btn-backup" onclick="backupData()">백업</button>
+        <button class="btn-restore" onclick="triggerRestore()">복구</button>
         <button class="btn-chart" onclick="openChart()">그래프</button>
         <button class="btn-reset" onclick="resetData()">전체 초기화</button>
     </div>
+    <!-- 숨겨진 파일 선택기 (복구용) -->
+    <input type="file" id="restoreFile" style="display: none;" accept=".json" onchange="restoreData(event)">
 
     <div class="table-responsive">
         <table>
@@ -257,6 +269,7 @@
                     <th>종로시세</th>
                     <th>차액</th>
                     <th>자료금</th>
+                    <th>입력시간</th>
                 </tr>
             </thead>
             <tbody id="tableBody">
@@ -270,7 +283,7 @@
 <div id="chartModal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3>금시세 트렌드 그래프</h3>
+            <h3>📈 시세 괴리율 흐름 (1돈원화 vs 종로시세)</h3>
             <button class="btn-close" onclick="closeChart()">닫기</button>
         </div>
         <div class="chart-container">
@@ -283,14 +296,7 @@
     const DAYS_COUNT = 31;
     let rowCounts = Array(DAYS_COUNT + 1).fill(1);
     let goldChartInstance = null;
-
-    // 숫자만 추출하여 천단위 콤마 포맷팅 적용
-    function formatNumber(val) {
-        if (!val) return '';
-        const num = val.toString().replace(/[^\d]/g, '');
-        if (!num) return '';
-        return parseInt(num, 10).toLocaleString();
-    }
+    const STORAGE_KEY = 'goldData_v31';
 
     function parseNumber(val) {
         if (!val) return NaN;
@@ -298,15 +304,17 @@
         return parseFloat(num);
     }
 
-    function handleInputFormatting(inputElem, callback) {
+    function handleInputFormatting(inputElem, callback, day, sub) {
         let cursorPosition = inputElem.selectionStart;
         let originalLength = inputElem.value.length;
         
         let rawVal = inputElem.value.replace(/[^\d]/g, '');
         if (rawVal) {
             inputElem.value = parseInt(rawVal, 10).toLocaleString();
+            updateInputTime(day, sub);
         } else {
             inputElem.value = '';
+            checkRowEmpty(day, sub);
         }
         
         let newLength = inputElem.value.length;
@@ -316,6 +324,27 @@
         } catch (e) {}
 
         if (callback) callback();
+    }
+
+    function updateInputTime(day, sub) {
+        const timeCell = document.getElementById(`time_${day}_${sub}`);
+        if (timeCell && !timeCell.innerText) {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            timeCell.innerText = `${hours}:${minutes}`;
+        }
+    }
+
+    function checkRowEmpty(day, sub) {
+        const intl = document.getElementById(`intl_${day}_${sub}`).value;
+        const ex = document.getElementById(`ex_${day}_${sub}`).value;
+        const jong = document.getElementById(`jong_${day}_${sub}`).value;
+        const memo = document.getElementById(`memo_${day}_${sub}`).value;
+        if (!intl && !ex && !jong && !memo) {
+            const timeCell = document.getElementById(`time_${day}_${sub}`);
+            if (timeCell) timeCell.innerText = '-';
+        }
     }
 
     function initTable() {
@@ -339,7 +368,7 @@
                     html += `
                         <td class="day-col" rowspan="${count}">
                             <div class="day-cell-content">
-                                <span><b>${i}</b></span>
+                                <span><b>${i}일</b></span>
                                 <button class="btn-add" onclick="addSubRow(${i})">+추가</button>
                             </div>
                         </td>
@@ -347,18 +376,19 @@
                 }
 
                 html += `
-                    <td><input type="text" inputmode="numeric" class="data-input" id="intl_${i}_${j}" placeholder="국제가" oninput="handleInputFormatting(this, () => calculateRow(${i}, ${j}))"></td>
-                    <td><input type="text" inputmode="numeric" class="data-input" id="ex_${i}_${j}" placeholder="환율" oninput="handleInputFormatting(this, () => calculateRow(${i}, ${j}))"></td>
+                    <td><input type="text" inputmode="numeric" class="data-input" id="intl_${i}_${j}" placeholder="국제가" oninput="handleInputFormatting(this, () => calculateRow(${i}, ${j}), ${i}, ${j})"></td>
+                    <td><input type="text" inputmode="numeric" class="data-input" id="ex_${i}_${j}" placeholder="환율" oninput="handleInputFormatting(this, () => calculateRow(${i}, ${j}), ${i}, ${j})"></td>
                     <td class="red-readonly-cell" id="g1_${i}_${j}">-</td>
                     <td class="red-readonly-cell" id="don_${i}_${j}">-</td>
-                    <td><input type="text" inputmode="numeric" class="data-input" id="jong_${i}_${j}" placeholder="종로" oninput="handleInputFormatting(this, () => calculateDiff(${i}, ${j}))"></td>
+                    <td><input type="text" inputmode="numeric" class="data-input" id="jong_${i}_${j}" placeholder="종로" oninput="handleInputFormatting(this, () => calculateDiff(${i}, ${j}), ${i}, ${j})"></td>
                     <td class="red-diff-cell" id="diff_${i}_${j}">-</td>
                     <td>
                         <div style="display: flex; gap: 2px; align-items: center; justify-content: center;">
-                            <input type="text" inputmode="numeric" class="data-input" id="memo_${i}_${j}" placeholder="자료금" oninput="handleInputFormatting(this)" style="width: 76px;">
+                            <input type="text" inputmode="numeric" class="data-input" id="memo_${i}_${j}" placeholder="자료금" oninput="handleInputFormatting(this, null, ${i}, ${j})" style="width: 76px;">
                             ${j > 1 ? `<button class="btn-del" onclick="removeSubRow(${i},${j})">삭제</button>` : ''}
                         </div>
                     </td>
+                    <td class="time-cell" id="time_${i}_${j}">-</td>
                 `;
 
                 html += `</tr>`;
@@ -381,11 +411,13 @@
             memoryData[`ex_${day}_${j}`] = memoryData[`ex_${day}_${j+1}`];
             memoryData[`jong_${day}_${j}`] = memoryData[`jong_${day}_${j+1}`];
             memoryData[`memo_${day}_${j}`] = memoryData[`memo_${day}_${j+1}`];
+            memoryData[`time_${day}_${j}`] = memoryData[`time_${day}_${j+1}`];
         }
         delete memoryData[`intl_${day}_${rowCounts[day]}`];
         delete memoryData[`ex_${day}_${rowCounts[day]}`];
         delete memoryData[`jong_${day}_${rowCounts[day]}`];
         delete memoryData[`memo_${day}_${rowCounts[day]}`];
+        delete memoryData[`time_${day}_${rowCounts[day]}`];
 
         rowCounts[day]--;
         renderTableStructure();
@@ -401,25 +433,32 @@
                 let exElem = document.getElementById(`ex_${i}_${j}`);
                 let jongElem = document.getElementById(`jong_${i}_${j}`);
                 let memoElem = document.getElementById(`memo_${i}_${j}`);
+                let timeCell = document.getElementById(`time_${i}_${j}`);
                 if (intlElem) memoryData[`intl_${i}_${j}`] = intlElem.value;
                 if (exElem) memoryData[`ex_${i}_${j}`] = exElem.value;
                 if (jongElem) memoryData[`jong_${i}_${j}`] = jongElem.value;
                 if (memoElem) memoryData[`memo_${i}_${j}`] = memoElem.value;
+                if (timeCell) memoryData[`time_${i}_${j}`] = timeCell.innerText;
             }
         }
     }
 
     function restoreValuesFromMemory() {
         for (let key in memoryData) {
-            let elem = document.getElementById(key);
-            if (elem) {
-                elem.value = memoryData[key];
-                let parts = key.split('_');
-                let day = parseInt(parts[1]), sub = parseInt(parts[2]);
-                if (key.startsWith('intl') || key.startsWith('ex')) {
-                    calculateRow(day, sub);
-                } else if (key.startsWith('jong')) {
-                    calculateDiff(day, sub);
+            if (key.startsWith('time_')) {
+                let timeCell = document.getElementById(key);
+                if (timeCell) timeCell.innerText = memoryData[key];
+            } else {
+                let elem = document.getElementById(key);
+                if (elem) {
+                    elem.value = memoryData[key];
+                    let parts = key.split('_');
+                    let day = parseInt(parts[1]), sub = parseInt(parts[2]);
+                    if (key.startsWith('intl') || key.startsWith('ex')) {
+                        calculateRow(day, sub);
+                    } else if (key.startsWith('jong')) {
+                        calculateDiff(day, sub);
+                    }
                 }
             }
         }
@@ -490,20 +529,22 @@
         };
         for (let i = 1; i <= DAYS_COUNT; i++) {
             for (let j = 1; j <= rowCounts[i]; j++) {
+                let timeCell = document.getElementById(`time_${i}_${j}`);
                 data.rows[`${i}_${j}`] = {
                     intl: document.getElementById(`intl_${i}_${j}`).value,
                     ex: document.getElementById(`ex_${i}_${j}`).value,
                     jong: document.getElementById(`jong_${i}_${j}`).value,
-                    memo: document.getElementById(`memo_${i}_${j}`).value
+                    memo: document.getElementById(`memo_${i}_${j}`).value,
+                    time: timeCell ? timeCell.innerText : '-'
                 };
             }
         }
-        localStorage.setItem('goldData_v27', JSON.stringify(data));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
         alert('저장되었습니다!');
     }
 
     function loadData() {
-        const saved = localStorage.getItem('goldData_v27');
+        const saved = localStorage.getItem(STORAGE_KEY);
         if (!saved) return;
         try {
             const data = JSON.parse(saved);
@@ -522,12 +563,14 @@
                     let exElem = document.getElementById(`ex_${i}_${j}`);
                     let jongElem = document.getElementById(`jong_${i}_${j}`);
                     let memoElem = document.getElementById(`memo_${i}_${j}`);
+                    let timeCell = document.getElementById(`time_${i}_${j}`);
                     
                     if (intlElem && exElem) {
                         intlElem.value = data.rows[key].intl || '';
                         exElem.value = data.rows[key].ex || '';
                         if (jongElem) jongElem.value = data.rows[key].jong || '';
                         if (memoElem) memoElem.value = data.rows[key].memo || '';
+                        if (timeCell && data.rows[key].time) timeCell.innerText = data.rows[key].time;
                         calculateRow(i, j);
                     }
                 }
@@ -538,19 +581,41 @@
     }
 
     function backupData() {
-        const data = localStorage.getItem('goldData_v27') || '{}';
+        const data = localStorage.getItem(STORAGE_KEY) || '{}';
         const blob = new Blob([data], {type: 'application/json'});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'gold_backup_v27.json';
+        a.download = 'gold_backup.json';
         a.click();
         URL.revokeObjectURL(url);
     }
 
+    function triggerRestore() {
+        document.getElementById('restoreFile').click();
+    }
+
+    function restoreData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const jsonContent = e.target.result;
+                JSON.parse(jsonContent);
+                localStorage.setItem(STORAGE_KEY, jsonContent);
+                alert('데이터가 성공적으로 복구되었습니다!');
+                location.reload();
+            } catch (err) {
+                alert('올바른 백업 파일(JSON)이 아닙니다.');
+            }
+        };
+        reader.readAsText(file);
+    }
+
     function resetData() {
         if (confirm('모든 데이터를 초기화하시겠습니까?')) {
-            localStorage.removeItem('goldData_v27');
+            localStorage.removeItem(STORAGE_KEY);
             rowCounts = Array(DAYS_COUNT + 1).fill(1);
             initTable();
             document.getElementById('commonExchange').value = '';
@@ -568,13 +633,25 @@
 
     function renderChart() {
         const labels = [];
-        const dataValues = [];
+        const donValues = [];
+        const jongValues = [];
 
         for (let i = 1; i <= DAYS_COUNT; i++) {
-            labels.push(i + '일');
-            const donText = document.getElementById(`don_${i}_1`).innerText;
-            const val = donText !== '-' ? parseNumber(donText) : null;
-            dataValues.push(val);
+            let count = rowCounts[i];
+            for (let j = 1; j <= count; j++) {
+                let timeCell = document.getElementById(`time_${i}_${j}`);
+                let timeStr = timeCell && timeCell.innerText !== '-' ? ` (${timeCell.innerText})` : '';
+                let labelStr = count > 1 ? `${i}일(${j})${timeStr}` : `${i}일${timeStr}`;
+                labels.push(labelStr);
+
+                const donText = document.getElementById(`don_${i}_${j}`).innerText;
+                const donVal = donText !== '-' ? parseNumber(donText) : null;
+                donValues.push(donVal);
+
+                const jongElem = document.getElementById(`jong_${i}_${j}`);
+                const jongVal = jongElem && jongElem.value ? parseNumber(jongElem.value) : null;
+                jongValues.push(jongVal);
+            }
         }
 
         const ctx = document.getElementById('goldChart').getContext('2d');
@@ -586,22 +663,46 @@
             type: 'line',
             data: {
                 labels: labels,
-                datasets: [{
-                    label: '3.75g(돈) 원화 시세',
-                    data: dataValues,
-                    borderColor: '#2563eb',
-                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                    borderWidth: 2,
-                    tension: 0.1,
-                    fill: true
-                }]
+                datasets: [
+                    {
+                        label: '종로시세 (실거래가)',
+                        data: jongValues,
+                        borderColor: '#dc2626',
+                        backgroundColor: 'rgba(220, 38, 38, 0.1)',
+                        borderWidth: 2.5,
+                        tension: 0.1,
+                        pointRadius: 3,
+                        fill: false
+                    },
+                    {
+                        label: '1돈원화 (국제가 환산)',
+                        data: donValues,
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        borderWidth: 2.5,
+                        tension: 0.1,
+                        pointRadius: 3,
+                        fill: false
+                    }
+                ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 scales: {
                     y: {
-                        beginAtZero: false
+                        beginAtZero: false,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString() + '원';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
                     }
                 }
             }
