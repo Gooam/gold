@@ -641,15 +641,15 @@
         document.getElementById('chartModal').style.display = 'none';
     }
 
-    // 주식 캔들차트 방식 (OHLC 계산 로직) 적용
+    // 날짜별로 고정된 X축 라벨을 사용하여 종로시세와 1돈원화가 정확히 나란히 정렬되도록 개선된 캔들 렌더링 로직
     function renderChart() {
         const labels = [];
-        const candleDonData = [];   // 1돈원화 캔들 [시가, 고가, 저가, 종가]
-        const candleJongData = [];  // 종로시세 캔들 [시가, 고가, 저가, 종가]
+        const candleDonData = [];
+        const candleJongData = [];
 
+        // 1일부터 31일까지 모든 날짜 축을 고정 생성하여 데이터 밀림 방지
         for (let i = 1; i <= DAYS_COUNT; i++) {
             let count = rowCounts[i];
-            
             let dayDons = [];
             let dayJongs = [];
 
@@ -664,6 +664,7 @@
                 }
             }
 
+            // 해당 날짜에 데이터가 단 하나라도 있는 경우에만 차트에 날짜 축 추가
             if (dayDons.length > 0 || dayJongs.length > 0) {
                 labels.push(`${i}일`);
 
@@ -672,7 +673,7 @@
                     let close = dayDons[dayDons.length - 1];
                     let high = Math.max(...dayDons);
                     let low = Math.min(...dayDons);
-                    candleDonData.push({ x: `${i}일`, o: open, h: high, l: low, c: close });
+                    candleDonData.push({ o: open, h: high, l: low, c: close });
                 } else {
                     candleDonData.push(null);
                 }
@@ -682,7 +683,7 @@
                     let close = dayJongs[dayJongs.length - 1];
                     let high = Math.max(...dayJongs);
                     let low = Math.min(...dayJongs);
-                    candleJongData.push({ x: `${i}일`, o: open, h: high, l: low, c: close });
+                    candleJongData.push({ o: open, h: high, l: low, c: close });
                 } else {
                     candleJongData.push(null);
                 }
