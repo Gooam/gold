@@ -206,7 +206,7 @@
             padding: 12px;
             border-radius: 8px;
             width: 100%;
-            max-width: 650px;
+            max-width: 680px;
             max-height: 90vh;
             display: flex;
             flex-direction: column;
@@ -231,8 +231,14 @@
         .chart-container {
             position: relative;
             flex-grow: 1;
-            height: 320px;
+            height: 340px;
             width: 100%;
+            overflow-x: auto; /* 가로 스크롤 지원 */
+        }
+        /* 차트 내부 실제 너비를 넓게 잡아 굵직하고 시원하게 표시 */
+        #goldChartBox {
+            min-width: 900px; 
+            height: 100%;
         }
     </style>
 </head>
@@ -283,8 +289,11 @@
             <button class="btn-close" onclick="closeChart()">닫기</button>
         </div>
         <div class="chart-container">
-            <canvas id="goldChart"></canvas>
+            <div id="goldChartBox">
+                <canvas id="goldChart"></canvas>
+            </div>
         </div>
+        <p style="text-align: center; font-size: 0.7rem; color: #64748b; margin: 4px 0 0 0;">👉 좌우로 스크럽하여 넓게 보실 수 있습니다.</p>
     </div>
 </div>
 
@@ -641,13 +650,12 @@
         document.getElementById('chartModal').style.display = 'none';
     }
 
-    // 1일부터 31일까지 고정 X축을 사용하여 날짜별 밀림 현상을 완벽히 차단한 렌더링 로직
+    // 1일부터 31일까지 고정 날짜 X축을 쓰되, 가로 폭을 넓혀서 굵직하고 완벽하게 나란히 정렬되는 렌더링 로직
     function renderChart() {
         const labels = [];
         const candleDonData = [];
         const candleJongData = [];
 
-        // 1일부터 31일까지 무조건 모든 날짜 축을 고정으로 생성
         for (let i = 1; i <= DAYS_COUNT; i++) {
             labels.push(`${i}일`);
             let count = rowCounts[i];
@@ -701,16 +709,20 @@
                         data: candleJongData.map(d => d ? [d.l, d.h] : null),
                         backgroundColor: '#dc2626',
                         borderColor: '#dc2626',
-                        borderWidth: 1.5,
-                        borderRadius: 2,
+                        borderWidth: 2,
+                        borderRadius: 3,
+                        barPercentage: 0.6,
+                        categoryPercentage: 0.7
                     },
                     {
                         label: '1돈원화 (국제가환산 캔들)',
                         data: candleDonData.map(d => d ? [d.l, d.h] : null),
                         backgroundColor: '#2563eb',
                         borderColor: '#2563eb',
-                        borderWidth: 1.5,
-                        borderRadius: 2,
+                        borderWidth: 2,
+                        borderRadius: 3,
+                        barPercentage: 0.6,
+                        categoryPercentage: 0.7
                     }
                 ]
             },
@@ -720,8 +732,7 @@
                 scales: {
                     x: {
                         ticks: {
-                            autoSkip: true,
-                            maxTicksLimit: 15
+                            autoSkip: false // 모든 날짜 표시
                         }
                     },
                     y: {
