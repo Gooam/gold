@@ -219,7 +219,7 @@
         }
         .modal-header h3 {
             margin: 0;
-            font-size: 1rem;
+            font-size: 0.83rem;
             color: #0f172a;
         }
         .btn-close {
@@ -650,7 +650,6 @@
         for (let i = 1; i <= DAYS_COUNT; i++) {
             let count = rowCounts[i];
             
-            // 해당 일자에 입력된 데이터 모으기
             let dayDons = [];
             let dayJongs = [];
 
@@ -665,11 +664,9 @@
                 }
             }
 
-            // 데이터가 있는 날만 캔들 생성
             if (dayDons.length > 0 || dayJongs.length > 0) {
                 labels.push(`${i}일`);
 
-                // 1돈원화 OHLC (시가: 첫값, 종가: 끝값, 고가: 최고, 저가: 최저)
                 if (dayDons.length > 0) {
                     let open = dayDons[0];
                     let close = dayDons[dayDons.length - 1];
@@ -680,7 +677,6 @@
                     candleDonData.push(null);
                 }
 
-                // 종로시세 OHLC
                 if (dayJongs.length > 0) {
                     let open = dayJongs[0];
                     let close = dayJongs[dayJongs.length - 1];
@@ -698,7 +694,6 @@
             goldChartInstance.destroy();
         }
 
-        // Chart.js 커스텀 바(Candle-like) 플러그인 또는 선형 변형 표현
         goldChartInstance = new Chart(ctx, {
             type: 'bar',
             data: {
@@ -706,7 +701,7 @@
                 datasets: [
                     {
                         label: '종로시세 (실거래가 캔들)',
-                        data: candleJongData.map(d => d ? [d.l, d.h] : null), // 저가~고가 바 영역
+                        data: candleJongData.map(d => d ? [d.l, d.h] : null),
                         backgroundColor: '#dc2626',
                         borderColor: '#dc2626',
                         borderWidth: 1.5,
