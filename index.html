@@ -236,7 +236,7 @@
             overflow-x: auto;
         }
         #goldChartBox {
-            min-width: 650px; 
+            min-width: 550px; 
             height: 100%;
         }
     </style>
@@ -649,12 +649,54 @@
         document.getElementById('chartModal').style.display = 'none';
     }
 
-    // 안정적인 고속 렌더링 및 컴팩트 간격 정렬
+    // 진짜 주식 캔들 (위아래 꼬리 + 몸통) 완벽 커스텀 렌더러 플러그인
+    const candlestickPlugin = {
+        id: 'candlestickPlugin',
+        afterDatasetsDraw(chart) {
+            const { ctx, scales: { x, y } } = chart;
+            chart.data.datasets.forEach((dataset, datasetIndex) => {
+                const meta = chart.getDatasetMeta(datasetIndex);
+                if (meta.hidden) return;
+                meta.data.forEach((element, index) => {
+                    const raw = dataset.data[index];
+                    if (!raw) return;
+                    const { o, h, l, c } = raw;
+                    const xCoord = element.x;
+                    const yHigh = y.getPixelForValue(h);
+                    const yLow = y.getPixelForValue(l);
+                    const yOpen = y.getPixelForValue(o);
+                    const yClose = y.getPixelForValue(c);
+
+                    ctx.save();
+                    ctx.strokeStyle = dataset.borderColor;
+                    ctx.fillStyle = dataset.backgroundColor;
+                    ctx.lineWidth = 1.5;
+
+                    // 1. 위아래 가느다란 꼬리 선 (고가 ~ 저가)
+                    ctx.beginPath();
+                    ctx.moveTo(xCoord, yHigh);
+                    ctx.lineTo(xCoord, yLow);
+                    ctx.stroke();
+
+                    // 2. 시가 ~ 종가 두툼한 캔들 몸통
+                    const barWidth = 6; 
+                    const topY = Math.min(yOpen, yClose);
+                    const bodyHeight = Math.max(Math.abs(yOpen - yClose), 2);
+                    ctx.fillRect(xCoord - barWidth / 2, topY, barWidth, bodyHeight);
+                    ctx.strokeRect(xCoord - barWidth / 2, topY, barWidth, bodyHeight);
+
+                    ctx.restore();
+                });
+            });
+        }
+    };
+
     function renderChart() {
         const labels = [];
         const candleDonData = [];
         const candleJongData = [];
 
+        // 데이터가 있는 날짜만 촘촘하게 추출하여 넓이 간격 최적화
         for (let i = 1; i <= DAYS_COUNT; i++) {
             let count = rowCounts[i];
             let dayDons = [];
@@ -679,7 +721,7 @@
                     let close = dayDons[dayDons.length - 1];
                     let high = Math.max(...dayDons);
                     let low = Math.min(...dayDons);
-                    candleDonData.push({ o: open, h: high, l: low, c: close, y: [low, high] });
+                    candleDonData.push({ o: open, h: high, l: low, c: close });
                 } else {
                     candleDonData.push(null);
                 }
@@ -689,7 +731,7 @@
                     let close = dayJongs[dayJongs.length - 1];
                     let high = Math.max(...dayJongs);
                     let low = Math.min(...dayJongs);
-                    candleJongData.push({ o: open, h: high, l: low, c: close, y: [low, high] });
+                    candleJongData.push({ o: open, h: high, l: low, c: close });
                 } else {
                     candleJongData.push(null);
                 }
@@ -702,29 +744,23 @@
         }
 
         goldChartInstance = new Chart(ctx, {
-            type: 'bar',
+            type: 'line',
             data: {
                 labels: labels,
                 datasets: [
                     {
                         label: '종로시세',
-                        data: candleJongData.map(d => d ? [d.l, d.h] : null),
+                        data: candleJongData,
                         backgroundColor: '#dc2626',
                         borderColor: '#dc2626',
-                        borderWidth: 3,
-                        borderRadius: 2,
-                        barPercentage: 0.8,
-                        categoryPercentage: 0.65
+                        pointRadius: 0
                     },
                     {
                         label: '1돈원화',
-                        data: candleDonData.map(d => d ? [d.l, d.h] : null),
+                        data: candleDonData,
                         backgroundColor: '#2563eb',
                         borderColor: '#2563eb',
-                        borderWidth: 3,
-                        borderRadius: 2,
-                        barPercentage: 0.8,
-                        categoryPercentage: 0.65
+                        pointRadius: 0
                     }
                 ]
             },
@@ -737,7 +773,7 @@
                         ticks: { autoSkip: false }
                     },
                     y: {
-                        grid: { color: '#f1f5f9' },
+                        grid: { display: false },
                         beginAtZero: false,
                         ticks: {
                             callback: function(value) {
@@ -770,7 +806,8 @@
                         }
                     }
                 }
-            }
+            },
+            plugins: [candlestickPlugin]
         });
     }
 
