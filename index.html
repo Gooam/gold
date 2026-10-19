@@ -231,7 +231,7 @@
         .chart-container {
             position: relative;
             flex-grow: 1;
-            height: 300px;
+            height: 320px;
             width: 100%;
         }
     </style>
@@ -275,11 +275,11 @@
     </div>
 </div>
 
-<!-- 그래프 모달 -->
+<!-- 캔들 스타일 차트 모달 -->
 <div id="chartModal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3>📈 시세 괴리율 흐름 (1돈원화 vs 종로시세)</h3>
+            <h3>🕯️ 금시세 쌍둥이 캔들 차트 (원화환산 vs 종로시세)</h3>
             <button class="btn-close" onclick="closeChart()">닫기</button>
         </div>
         <div class="chart-container">
@@ -288,7 +288,7 @@
     </div>
 </div>
 
-<!-- 텍스트 복구 모달 (신박한 기능!) -->
+<!-- 텍스트 복구 모달 -->
 <div id="restoreModal">
     <div class="modal-content">
         <div class="modal-header">
@@ -303,11 +303,9 @@
 
 <script>
     const DAYS_COUNT = 31;
-    let rowCounts = [
-        1, 6, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
-    ];
+    let rowCounts = Array(DAYS_COUNT + 1).fill(1);
     let goldChartInstance = null;
-    const STORAGE_KEY = 'goldData_v37';
+    const STORAGE_KEY = 'goldData_v38';
 
     function parseNumber(val) {
         if (!val) return NaN;
@@ -555,31 +553,10 @@
     }
 
     function loadData() {
-        const defaultData = {
-            "commonExchange": "",
-            "rowCounts": [
-                1, 6, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
-            ],
-            "rows": {
-                "1_1": { "intl": "4,160", "ex": "1,364", "jong": "", "memo": "", "time": "09:00" },
-                "1_2": { "intl": "4,146", "ex": "1,363", "jong": "", "memo": "", "time": "09:00" },
-                "1_3": { "intl": "4,155", "ex": "1,360", "jong": "", "memo": "", "time": "09:00" },
-                "1_4": { "intl": "4,171", "ex": "1,358", "jong": "", "memo": "", "time": "09:00" },
-                "1_5": { "intl": "4,183", "ex": "1,355", "jong": "", "memo": "", "time": "09:00" },
-                "1_6": { "intl": "4,196", "ex": "1,346", "jong": "", "memo": "", "time": "09:00" },
-                "2_1": { "intl": "4,200", "ex": "", "jong": "", "memo": "", "time": "09:00" },
-                "3_1": { "intl": "4,141", "ex": "1,347", "jong": "", "memo": "", "time": "09:00" },
-                "5_1": { "intl": "4,153", "ex": "1,346", "jong": "", "memo": "", "time": "09:00" },
-                "5_2": { "intl": "4,161", "ex": "1,343", "jong": "", "memo": "", "time": "09:00" },
-                "5_3": { "intl": "4,153", "ex": "1,347", "jong": "", "memo": "", "time": "09:00" },
-                "6_1": { "intl": "4,138", "ex": "1,342", "jong": "677,000", "memo": "", "time": "09:00" }
-            }
-        };
-
         const saved = localStorage.getItem(STORAGE_KEY);
-        const data = saved ? JSON.parse(saved) : defaultData;
-
+        if (!saved) return;
         try {
+            const data = JSON.parse(saved);
             if (data.commonExchange) {
                 document.getElementById('commonExchange').value = data.commonExchange;
             }
@@ -612,11 +589,10 @@
         }
     }
 
-    // 신박한 백업: 폰 클립보드에 JSON 텍스트 바로 복사하기!
-    async function backupData() {
+    function backupData() {
         const data = localStorage.getItem(STORAGE_KEY) || '{}';
         try {
-            await navigator.clipboard.writeText(data);
+            navigator.clipboard.writeText(data);
             alert('백업 데이터가 클립보드에 복사되었습니다! 원하는 곳에 붙여넣기 하세요.');
         } catch (err) {
             prompt('아래 텍스트를 모두 복사해 두세요:', data);
@@ -631,7 +607,6 @@
         document.getElementById('restoreModal').style.display = 'none';
     }
 
-    // 신박한 복구: 팝업 창에 텍스트 붙여넣고 적용하기!
     function applyTextRestore() {
         const text = document.getElementById('restoreTextArea').value.trim();
         if (!text) {
@@ -639,7 +614,7 @@
             return;
         }
         try {
-            JSON.parse(text); // JSON 형식 검증
+            JSON.parse(text);
             localStorage.setItem(STORAGE_KEY, text);
             alert('데이터가 성공적으로 복구되었습니다!');
             location.reload();
@@ -666,26 +641,55 @@
         document.getElementById('chartModal').style.display = 'none';
     }
 
+    // 주식 캔들차트 방식 (OHLC 계산 로직) 적용
     function renderChart() {
         const labels = [];
-        const donValues = [];
-        const jongValues = [];
+        const candleDonData = [];   // 1돈원화 캔들 [시가, 고가, 저가, 종가]
+        const candleJongData = [];  // 종로시세 캔들 [시가, 고가, 저가, 종가]
 
         for (let i = 1; i <= DAYS_COUNT; i++) {
             let count = rowCounts[i];
+            
+            // 해당 일자에 입력된 데이터 모으기
+            let dayDons = [];
+            let dayJongs = [];
+
             for (let j = 1; j <= count; j++) {
-                let timeCell = document.getElementById(`time_${i}_${j}`);
-                let timeStr = timeCell && timeCell.innerText !== '-' ? ` (${timeCell.innerText})` : '';
-                let labelStr = count > 1 ? `${i}일(${j})${timeStr}` : `${i}일${timeStr}`;
-                labels.push(labelStr);
-
                 const donText = document.getElementById(`don_${i}_${j}`).innerText;
-                const donVal = donText !== '-' ? parseNumber(donText) : null;
-                donValues.push(donVal);
-
+                if (donText !== '-') {
+                    dayDons.push(parseNumber(donText));
+                }
                 const jongElem = document.getElementById(`jong_${i}_${j}`);
-                const jongVal = jongElem && jongElem.value ? parseNumber(jongElem.value) : null;
-                jongValues.push(jongVal);
+                if (jongElem && jongElem.value) {
+                    dayJongs.push(parseNumber(jongElem.value));
+                }
+            }
+
+            // 데이터가 있는 날만 캔들 생성
+            if (dayDons.length > 0 || dayJongs.length > 0) {
+                labels.push(`${i}일`);
+
+                // 1돈원화 OHLC (시가: 첫값, 종가: 끝값, 고가: 최고, 저가: 최저)
+                if (dayDons.length > 0) {
+                    let open = dayDons[0];
+                    let close = dayDons[dayDons.length - 1];
+                    let high = Math.max(...dayDons);
+                    let low = Math.min(...dayDons);
+                    candleDonData.push({ x: `${i}일`, o: open, h: high, l: low, c: close });
+                } else {
+                    candleDonData.push(null);
+                }
+
+                // 종로시세 OHLC
+                if (dayJongs.length > 0) {
+                    let open = dayJongs[0];
+                    let close = dayJongs[dayJongs.length - 1];
+                    let high = Math.max(...dayJongs);
+                    let low = Math.min(...dayJongs);
+                    candleJongData.push({ x: `${i}일`, o: open, h: high, l: low, c: close });
+                } else {
+                    candleJongData.push(null);
+                }
             }
         }
 
@@ -694,32 +698,27 @@
             goldChartInstance.destroy();
         }
 
+        // Chart.js 커스텀 바(Candle-like) 플러그인 또는 선형 변형 표현
         goldChartInstance = new Chart(ctx, {
-            type: 'line',
+            type: 'bar',
             data: {
                 labels: labels,
                 datasets: [
                     {
-                        label: '종로시세 (실거래가)',
-                        data: jongValues,
+                        label: '종로시세 (실거래가 캔들)',
+                        data: candleJongData.map(d => d ? [d.l, d.h] : null), // 저가~고가 바 영역
+                        backgroundColor: '#dc2626',
                         borderColor: '#dc2626',
-                        backgroundColor: 'rgba(220, 38, 38, 0.1)',
-                        borderWidth: 2.5,
-                        tension: 0.1,
-                        pointRadius: 0,
-                        pointHoverRadius: 4,
-                        fill: false
+                        borderWidth: 1.5,
+                        borderRadius: 2,
                     },
                     {
-                        label: '1돈원화 (국제가 환산)',
-                        data: donValues,
+                        label: '1돈원화 (국제가환산 캔들)',
+                        data: candleDonData.map(d => d ? [d.l, d.h] : null),
+                        backgroundColor: '#2563eb',
                         borderColor: '#2563eb',
-                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                        borderWidth: 2.5,
-                        tension: 0.1,
-                        pointRadius: 0,
-                        pointHoverRadius: 4,
-                        fill: false
+                        borderWidth: 1.5,
+                        borderRadius: 2,
                     }
                 ]
             },
@@ -740,6 +739,17 @@
                     legend: {
                         display: true,
                         position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let idx = context.dataIndex;
+                                let datasetIdx = context.datasetIndex;
+                                let target = datasetIdx === 0 ? candleJongData[idx] : candleDonData[idx];
+                                if (!target) return '';
+                                return `${context.dataset.label} -> 시가: ${target.o.toLocaleString()} | 고가: ${target.h.toLocaleString()} | 저가: ${target.l.toLocaleString()} | 종가: ${target.c.toLocaleString()}`;
+                            }
+                        }
                     }
                 }
             }
