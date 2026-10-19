@@ -292,7 +292,7 @@
                 <canvas id="goldChart"></canvas>
             </div>
         </div>
-        <p style="text-align: center; font-size: 0.7rem; color: #64748b; margin: 4px 0 0 0;">👉 화면을 터치하여 간결화된 십자선 시세를 확인하세요.</p>
+        <p style="text-align: center; font-size: 0.7rem; color: #64748b; margin: 4px 0 0 0;">👉 화면을 터치하여 상세 시세를 확인하세요.</p>
     </div>
 </div>
 
@@ -649,7 +649,7 @@
         document.getElementById('chartModal').style.display = 'none';
     }
 
-    // 안정적이고 촘촘한 간격의 막대 렌더링 로직 (오류 제로)
+    // 100% 안전하고 시인성 극대화된 막대 렌더링 로직
     function renderChart() {
         const labels = [];
         const candleDonData = [];
@@ -713,7 +713,7 @@
                         borderColor: '#dc2626',
                         borderWidth: 2,
                         borderRadius: 2,
-                        barPercentage: 0.75,
+                        barPercentage: 0.7,
                         categoryPercentage: 0.6
                     },
                     {
@@ -723,7 +723,7 @@
                         borderColor: '#2563eb',
                         borderWidth: 2,
                         borderRadius: 2,
-                        barPercentage: 0.75,
+                        barPercentage: 0.7,
                         categoryPercentage: 0.6
                     }
                 ]
