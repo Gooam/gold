@@ -235,8 +235,9 @@
             width: 100%;
             overflow-x: auto;
         }
+        /* 날짜 간격 폭을 더 촘촘하게 압축하기 위해 최소 너비를 슬림하게 조정 */
         #goldChartBox {
-            min-width: 450px; 
+            min-width: 380px; 
             height: 100%;
         }
     </style>
@@ -649,7 +650,7 @@
         document.getElementById('chartModal').style.display = 'none';
     }
 
-    // 진짜 주식 캔들 (위아래 꼬리선 + 두툼한 시가/종가 몸통) 구현 콤보 플러그인
+    // 진짜 주식 캔들 (위아래 꼬리선 + 두툼한 시가/종가 몸통) 콤보 플러그인
     const candlestickPlugin = {
         id: 'candlestickPlugin',
         afterDatasetsDraw(chart) {
@@ -678,7 +679,7 @@
                     ctx.lineTo(xCoord, yLow);
                     ctx.stroke();
 
-                    // 2. 시가 ~ 종가 두툼한 몸통 (최소 높이 3픽셀 보장으로 꼬리만 있어도 몸통이 보이게 처리)
+                    // 2. 시가 ~ 종가 두툼한 몸통
                     const barWidth = 7;
                     const topY = Math.min(yOpen, yClose);
                     const bodyHeight = Math.max(Math.abs(yOpen - yClose), 3);
@@ -698,7 +699,6 @@
         const lineDonData = [];
         const lineJongData = [];
 
-        // 데이터가 존재하는 날짜들만 촘촘하게 추출하여 간격 압축
         for (let i = 1; i <= DAYS_COUNT; i++) {
             let count = rowCounts[i];
             let dayDons = [];
@@ -725,7 +725,7 @@
                     let low = Math.min(...dayDons);
                     let candle = { o: open, h: high, l: low, c: close };
                     rawDonCandles.push(candle);
-                    lineDonData.push((high + low) / 2); // 플러그인 위치 잡기용 기준점
+                    lineDonData.push((high + low) / 2);
                 } else {
                     rawDonCandles.push(null);
                     lineDonData.push(null);
