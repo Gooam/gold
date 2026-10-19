@@ -3,311 +3,769 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>주식 캔들 차트</title>
-    <!-- Chart.js 및 줌 플러그인 로드 -->
+    <title>킷코 금시세 실시간 일지</title>
+    <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1"></script>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: #121212;
-            color: #e0e0e0;
-            padding: 15px;
+            font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+            background-color: #f8fafc;
+            margin: 0;
+            padding: 2px;
+            color: #1e293b;
         }
         .container {
-            max-width: 900px;
+            max-width: 1200px;
             margin: 0 auto;
-            background: #1e1e1e;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            background: #ffffff;
+            padding: 6px;
+            border-radius: 6px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
-        h2 {
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            color: #ffffff;
+        h1 {
+            text-align: center;
+            font-size: 1.05rem;
+            margin: 2px 0 6px 0;
+            color: #0f172a;
+        }
+        .common-controls {
+            background: #f1f5f9;
+            padding: 4px 6px;
+            border-radius: 4px;
+            margin-bottom: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .common-controls label {
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #334155;
+        }
+        .common-controls input {
+            padding: 4px 6px;
+            font-size: 0.85rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 3px;
+            width: 100%;
+            box-sizing: border-box;
+            height: 24px;
+        }
+        .actions-top {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 6px;
+        }
+        button {
+            flex: 1;
+            padding: 5px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            color: white;
+        }
+        .btn-save { background-color: #2563eb; }
+        .btn-backup { background-color: #16a34a; }
+        .btn-restore { background-color: #0d9488; }
+        .btn-chart { background-color: #9333ea; }
+        .btn-reset { background-color: #dc2626; }
+
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            max-height: 84vh;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            min-width: 860px;
+        }
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 2px 3px;
+            text-align: center;
+            vertical-align: middle;
+            height: 24px;
+        }
+        th {
+            background-color: #f1f5f9;
+            color: #334155;
+            font-weight: bold;
+            padding: 4px 3px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        th:first-child, td.day-col {
+            position: sticky;
+            left: 0;
+            background-color: #f8fafc;
+            z-index: 5;
+            width: 65px;
+            box-shadow: 2px 0 3px rgba(0,0,0,0.03);
+            padding: 2px;
+        }
+        th:first-child {
+            z-index: 15;
+            background-color: #f1f5f9;
+        }
+
+        tr.day-group-end {
+            border-bottom: 1px solid #cbd5e1;
+        }
+        tr.sub-row {
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .day-cell-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 3px;
+            gap: 2px;
+        }
+
+        .btn-add {
+            background-color: #16a34a;
+            color: white;
+            border: none;
+            padding: 1px 3px;
+            font-size: 0.55rem;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+        .btn-del {
+            background-color: #dc2626;
+            color: white;
+            border: none;
+            padding: 1px 3px;
+            font-size: 0.55rem;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+        
+        input.data-input {
+            width: 76px;
+            padding: 2px 4px;
+            font-size: 0.8rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 3px;
+            box-sizing: border-box;
+            text-align: right;
+            height: 22px;
+        }
+        input.data-input:focus {
+            outline: 1.5px solid #2563eb;
+            background: #ffffff;
+        }
+        
+        .red-readonly-cell {
+            background-color: #f8fafc;
+            color: #dc2626;
+            text-align: right;
+            padding-right: 4px;
+            font-weight: 600;
+            min-width: 76px;
+            font-size: 0.8rem;
+        }
+        .red-diff-cell {
+            background-color: #f8fafc;
+            color: #dc2626;
+            text-align: right;
+            padding-right: 4px;
+            font-weight: 600;
+            min-width: 76px;
+            font-size: 0.8rem;
+        }
+        .time-cell {
+            background-color: #f8fafc;
+            color: #475569;
+            text-align: center;
+            font-size: 0.75rem;
+            min-width: 65px;
+        }
+
+        #chartModal, #restoreModal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 6px;
+            box-sizing: border-box;
+        }
+        .modal-content {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 680px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 8px;
         }
-        .info-panel {
-            background: #2a2a2a;
-            padding: 10px 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            font-size: 0.9rem;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            min-height: 42px;
-            align-items: center;
+        .modal-header h3 {
+            margin: 0;
+            font-size: 0.83rem;
+            color: #0f172a;
         }
-        .info-item span {
-            color: #888;
-            margin-right: 5px;
+        .btn-close {
+            background: #dc2626;
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            flex: unset;
         }
         .chart-container {
             position: relative;
+            flex-grow: 1;
+            height: 340px;
             width: 100%;
+            overflow-x: auto;
         }
-        .price-chart-box {
-            height: 380px;
-            margin-bottom: 10px;
-        }
-        .volume-chart-box {
-            height: 120px;
-        }
-        .btn-group {
-            margin-top: 15px;
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-        }
-        button {
-            background: #333;
-            color: #fff;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            transition: background 0.2s;
-        }
-        button:hover {
-            background: #444;
+        #goldChartBox {
+            min-width: 800px; 
+            height: 100%;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>
-        <span>주식 캔들 & 거래량 차트</span>
-        <span style="font-size: 0.8rem; color: #888;" id="current-date-range"></span>
-    </h2>
+    <h1>킷코 금시세 실시간 일지</h1>
 
-    <!-- 터치/마우스오버 시 상세 정보 표시 패널 -->
-    <div class="info-panel" id="info-panel">
-        <span style="color: #aaa;">차트에 손가락이나 마우스를 올리세요</span>
+    <div class="common-controls">
+        <label for="commonExchange">공통 적용 환율:</label>
+        <input type="text" id="commonExchange" placeholder="예: 1,380" oninput="handleInputFormatting(this)" onblur="applyCommonExchange()">
     </div>
 
-    <!-- 주가 캔들 차트 영역 -->
-    <div class="chart-container price-chart-box">
-        <canvas id="priceChart"></canvas>
+    <div class="actions-top">
+        <button class="btn-save" onclick="saveData()">저장</button>
+        <button class="btn-backup" onclick="backupData()">백업(복사)</button>
+        <button class="btn-restore" onclick="openRestoreModal()">복구(붙여넣기)</button>
+        <button class="btn-chart" onclick="openChart()">그래프</button>
+        <button class="btn-reset" onclick="resetData()">전체 초기화</button>
     </div>
 
-    <!-- 거래량 차트 영역 -->
-    <div class="chart-container volume-chart-box">
-        <canvas id="volumeChart"></canvas>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>일자</th>
+                    <th>국제가</th>
+                    <th>환율</th>
+                    <th>1g원화</th>
+                    <th>3.75g(돈)</th>
+                    <th>종로시세</th>
+                    <th>차액</th>
+                    <th>자료금</th>
+                    <th>입력시간</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+            </tbody>
+        </table>
     </div>
+</div>
 
-    <div class="btn-group">
-        <button id="resetZoomBtn">차트 초기화 (줌 리셋)</button>
+<!-- 캔들 스타일 차트 모달 -->
+<div id="chartModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>🕯️ 금시세 쌍둥이 캔들 차트 (원화환산 vs 종로시세)</h3>
+            <button class="btn-close" onclick="closeChart()">닫기</button>
+        </div>
+        <div class="chart-container">
+            <div id="goldChartBox">
+                <canvas id="goldChart"></canvas>
+            </div>
+        </div>
+        <p style="text-align: center; font-size: 0.7rem; color: #64748b; margin: 4px 0 0 0;">👉 좌우로 스크럽하여 넓게 보실 수 있습니다.</p>
+    </div>
+</div>
+
+<!-- 텍스트 복구 모달 -->
+<div id="restoreModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>📥 백업 텍스트 붙여넣기 복구</h3>
+            <button class="btn-close" onclick="closeRestoreModal()">닫기</button>
+        </div>
+        <p style="font-size: 0.75rem; color: #64748b; margin: 0 0 6px 0;">아래 칸에 백업 JSON 코드를 꾹 눌러서 붙여넣은 뒤 '적용하기'를 누르세요!</p>
+        <textarea id="restoreTextArea" style="width: 100%; height: 180px; font-size: 0.75rem; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; resize: none;" placeholder="여기에 백업 코드를 붙여넣으세요..."></textarea>
+        <button class="btn-save" style="margin-top: 8px; padding: 8px;" onclick="applyTextRestore()">적용하기</button>
     </div>
 </div>
 
 <script>
-    // 샘플 주가 데이터 생성 (실제 데이터로 교체 가능)
-    function generateMockData(count = 50) {
-        let data = [];
-        let price = 50000;
-        let baseDate = new Date(2026, 0, 1);
+    const DAYS_COUNT = 31;
+    let rowCounts = Array(DAYS_COUNT + 1).fill(1);
+    let goldChartInstance = null;
+    const STORAGE_KEY = 'goldData_v38';
 
-        for (let i = 0; i < count; i++) {
-            let change = (Math.random() - 0.48) * 1500;
-            let open = price;
-            let close = Math.round(price + change);
-            let high = Math.max(open, close) + Math.round(Math.random() * 800);
-            let low = Math.min(open, close) - Math.round(Math.random() * 800);
-            let volume = Math.round(Math.random() * 500000 + 100000);
-            
-            let dateStr = baseDate.toISOString().split('T')[0];
-            data.push({ date: dateStr, open, high, low, close, volume });
-
-            baseDate.setDate(baseDate.getDate() + 1);
-            price = close;
-        }
-        return data;
+    function parseNumber(val) {
+        if (!val) return NaN;
+        const num = val.toString().replace(/,/g, '');
+        return parseFloat(num);
     }
 
-    const stockData = generateMockData(60);
-    const labels = stockData.map(d => d.date);
-    
-    // 캔들스틱 커스텀 컨트롤러 정의 (두껍고 바둑판 없이 밀착된 형태)
-    const CandlestickController = {
-        id: 'candlestick',
-        afterDatasetsDraw(chart, args, options) {
-            const { ctx, chartArea: { top, bottom }, scales: { x, y } } = chart;
-            
-            ctx.save();
-            stockData.forEach((d, index) => {
-                const xCoor = x.getPixelForValue(index);
-                const openCoor = y.getPixelForValue(d.open);
-                const closeCoor = y.getPixelForValue(d.close);
-                const highCoor = y.getPixelForValue(d.high);
-                const lowCoor = y.getPixelForValue(d.low);
-
-                const isUp = d.close >= d.open;
-                const color = isUp ? '#ff4d4d' : '#4d79ff'; // 상승 빨강, 하락 파랑
-
-                // 윗꼬리 / 아랫꼬리 그리기
-                ctx.strokeStyle = color;
-                ctx.lineWidth = 1.5;
-                ctx.beginPath();
-                ctx.moveTo(xCoor, highCoor);
-                ctx.lineTo(xCoor, Math.min(openCoor, closeCoor));
-                ctx.moveTo(xCoor, lowCoor);
-                ctx.lineTo(xCoor, Math.max(openCoor, closeCoor));
-                ctx.stroke();
-
-                // 캔들 몸통 그리기 (두껍게, 여백 없이 꽉 차게 설정)
-                const candleWidth = Math.max(3, (chart.chartArea.width / stockData.length) * 0.75);
-                ctx.fillStyle = color;
-                const bodyTop = Math.min(openCoor, closeCoor);
-                const bodyHeight = Math.max(2, Math.abs(closeCoor - openCoor));
-                ctx.fillRect(xCoor - candleWidth / 2, bodyTop, candleWidth, bodyHeight);
-            });
-            ctx.restore();
+    function handleInputFormatting(inputElem, callback, day, sub) {
+        let cursorPosition = inputElem.selectionStart;
+        let originalLength = inputElem.value.length;
+        
+        let rawVal = inputElem.value.replace(/[^\d]/g, '');
+        if (rawVal) {
+            inputElem.value = parseInt(rawVal, 10).toLocaleString();
+            updateInputTime(day, sub);
+        } else {
+            inputElem.value = '';
+            checkRowEmpty(day, sub);
         }
-    };
-    Chart.register(CandlestickController);
+        
+        let newLength = inputElem.value.length;
+        cursorPosition = Math.max(0, cursorPosition + (newLength - originalLength));
+        try {
+            inputElem.setSelectionRange(cursorPosition, cursorPosition);
+        } catch (e) {}
 
-    // 공통 툴팁 및 십자선(Crosshair) 연동 플러그인
-    const crosshairPlugin = {
-        id: 'crosshair',
-        afterDraw(chart) {
-            if (chart.tooltip._active && chart.tooltip._active.length) {
-                const ctx = chart.ctx;
-                const x = chart.tooltip._active[0].element.x;
-                const top = chart.chartArea.top;
-                const bottom = chart.chartArea.bottom;
+        if (callback) callback();
+    }
 
-                ctx.save();
-                ctx.beginPath();
-                ctx.moveTo(x, top);
-                ctx.lineTo(x, bottom);
-                ctx.lineWidth = 1;
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
-                ctx.setLineDash([3, 3]);
-                ctx.stroke();
-                ctx.restore();
+    function updateInputTime(day, sub) {
+        const timeCell = document.getElementById(`time_${day}_${sub}`);
+        if (timeCell && (!timeCell.innerText || timeCell.innerText === '-')) {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            timeCell.innerText = `${hours}:${minutes}`;
+        }
+    }
+
+    function checkRowEmpty(day, sub) {
+        const intl = document.getElementById(`intl_${day}_${sub}`).value;
+        const ex = document.getElementById(`ex_${day}_${sub}`).value;
+        const jong = document.getElementById(`jong_${day}_${sub}`).value;
+        const memo = document.getElementById(`memo_${day}_${sub}`).value;
+        if (!intl && !ex && !jong && !memo) {
+            const timeCell = document.getElementById(`time_${day}_${sub}`);
+            if (timeCell) timeCell.innerText = '-';
+        }
+    }
+
+    function initTable() {
+        renderTableStructure();
+        loadData();
+    }
+
+    function renderTableStructure() {
+        const tbody = document.getElementById('tableBody');
+        let html = '';
+        
+        for (let i = 1; i <= DAYS_COUNT; i++) {
+            let count = rowCounts[i];
+            for (let j = 1; j <= count; j++) {
+                let isLast = (j === count);
+                let rowClass = isLast ? 'day-group-end' : 'sub-row';
+                
+                html += `<tr class="${rowClass}" data-day="${i}" data-sub="${j}">`;
+                
+                if (j === 1) {
+                    html += `
+                        <td class="day-col" rowspan="${count}">
+                            <div class="day-cell-content">
+                                <span><b>${i}일</b></span>
+                                <button class="btn-add" onclick="addSubRow(${i})">+추가</button>
+                            </div>
+                        </td>
+                    `;
+                }
+
+                html += `
+                    <td><input type="text" inputmode="numeric" class="data-input" id="intl_${i}_${j}" placeholder="국제가" oninput="handleInputFormatting(this, () => calculateRow(${i}, ${j}), ${i}, ${j})"></td>
+                    <td><input type="text" inputmode="numeric" class="data-input" id="ex_${i}_${j}" placeholder="환율" oninput="handleInputFormatting(this, () => calculateRow(${i}, ${j}), ${i}, ${j})"></td>
+                    <td class="red-readonly-cell" id="g1_${i}_${j}">-</td>
+                    <td class="red-readonly-cell" id="don_${i}_${j}">-</td>
+                    <td><input type="text" inputmode="numeric" class="data-input" id="jong_${i}_${j}" placeholder="종로" oninput="handleInputFormatting(this, () => calculateDiff(${i}, ${j}), ${i}, ${j})"></td>
+                    <td class="red-diff-cell" id="diff_${i}_${j}">-</td>
+                    <td>
+                        <div style="display: flex; gap: 2px; align-items: center; justify-content: center;">
+                            <input type="text" inputmode="numeric" class="data-input" id="memo_${i}_${j}" placeholder="자료금" oninput="handleInputFormatting(this, null, ${i}, ${j})" style="width: 76px;">
+                            ${j > 1 ? `<button class="btn-del" onclick="removeSubRow(${i},${j})">삭제</button>` : ''}
+                        </div>
+                    </td>
+                    <td class="time-cell" id="time_${i}_${j}">-</td>
+                `;
+
+                html += `</tr>`;
             }
         }
-    };
+        tbody.innerHTML = html;
+    }
 
-    // 1. 가격 차트 생성 (바둑판 격자 완전 제거)
-    const priceCtx = document.getElementById('priceChart').getContext('2d');
-    const priceChart = new Chart(priceCtx, {
-        type: 'line', // 베이스 타입 (캔들은 플러그인으로 그림)
-        data: {
-            labels: labels,
-            datasets: [{
-                data: stockData.map(d => d.close),
-                borderColor: 'transparent',
-                backgroundColor: 'transparent',
-                pointRadius: 0
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: false,
-            interaction: {
-                mode: 'index',
-                intersect: false,
+    function addSubRow(day) {
+        saveCurrentValuesToMemory();
+        rowCounts[day]++;
+        renderTableStructure();
+        restoreValuesFromMemory();
+    }
+
+    function removeSubRow(day, sub) {
+        saveCurrentValuesToMemory();
+        for (let j = sub; j < rowCounts[day]; j++) {
+            memoryData[`intl_${day}_${j}`] = memoryData[`intl_${day}_${j+1}`];
+            memoryData[`ex_${day}_${j}`] = memoryData[`ex_${day}_${j+1}`];
+            memoryData[`jong_${day}_${j}`] = memoryData[`jong_${day}_${j+1}`];
+            memoryData[`memo_${day}_${j}`] = memoryData[`memo_${day}_${j+1}`];
+            memoryData[`time_${day}_${j}`] = memoryData[`time_${day}_${j+1}`];
+        }
+        delete memoryData[`intl_${day}_${rowCounts[day]}`];
+        delete memoryData[`ex_${day}_${rowCounts[day]}`];
+        delete memoryData[`jong_${day}_${rowCounts[day]}`];
+        delete memoryData[`memo_${day}_${rowCounts[day]}`];
+        delete memoryData[`time_${day}_${rowCounts[day]}`];
+
+        rowCounts[day]--;
+        renderTableStructure();
+        restoreValuesFromMemory();
+    }
+
+    let memoryData = {};
+    function saveCurrentValuesToMemory() {
+        memoryData = {};
+        for (let i = 1; i <= DAYS_COUNT; i++) {
+            for (let j = 1; j <= rowCounts[i]; j++) {
+                let intlElem = document.getElementById(`intl_${i}_${j}`);
+                let exElem = document.getElementById(`ex_${i}_${j}`);
+                let jongElem = document.getElementById(`jong_${i}_${j}`);
+                let memoElem = document.getElementById(`memo_${i}_${j}`);
+                let timeCell = document.getElementById(`time_${i}_${j}`);
+                if (intlElem) memoryData[`intl_${i}_${j}`] = intlElem.value;
+                if (exElem) memoryData[`ex_${i}_${j}`] = exElem.value;
+                if (jongElem) memoryData[`jong_${i}_${j}`] = jongElem.value;
+                if (memoElem) memoryData[`memo_${i}_${j}`] = memoElem.value;
+                if (timeCell) memoryData[`time_${i}_${j}`] = timeCell.innerText;
+            }
+        }
+    }
+
+    function restoreValuesFromMemory() {
+        for (let key in memoryData) {
+            if (key.startsWith('time_')) {
+                let timeCell = document.getElementById(key);
+                if (timeCell) timeCell.innerText = memoryData[key];
+            } else {
+                let elem = document.getElementById(key);
+                if (elem) {
+                    elem.value = memoryData[key];
+                    let parts = key.split('_');
+                    let day = parseInt(parts[1]), sub = parseInt(parts[2]);
+                    if (key.startsWith('intl') || key.startsWith('ex')) {
+                        calculateRow(day, sub);
+                    } else if (key.startsWith('jong')) {
+                        calculateDiff(day, sub);
+                    }
+                }
+            }
+        }
+    }
+
+    function applyCommonExchange() {
+        const commonInput = document.getElementById('commonExchange');
+        const commonVal = parseNumber(commonInput.value);
+        if(!isNaN(commonVal)) {
+            commonInput.value = commonVal.toLocaleString();
+        }
+        for (let i = 1; i <= DAYS_COUNT; i++) {
+            for (let j = 1; j <= rowCounts[i]; j++) {
+                const exInput = document.getElementById(`ex_${i}_${j}`);
+                if (exInput) {
+                    exInput.value = !isNaN(commonVal) ? Math.round(commonVal).toLocaleString() : '';
+                    calculateRow(i, j);
+                }
+            }
+        }
+    }
+
+    function calculateRow(day, sub) {
+        const intlVal = parseNumber(document.getElementById(`intl_${day}_${sub}`).value);
+        const exVal = parseNumber(document.getElementById(`ex_${day}_${sub}`).value);
+
+        const g1Cell = document.getElementById(`g1_${day}_${sub}`);
+        const donCell = document.getElementById(`don_${day}_${sub}`);
+
+        if (!isNaN(intlVal) && !isNaN(exVal)) {
+            const g1 = (intlVal * exVal) / 31.1035;
+            const don = g1 * 3.75;
+
+            g1Cell.innerText = Math.round(g1).toLocaleString();
+            donCell.innerText = Math.round(don).toLocaleString();
+            
+            calculateDiff(day, sub, don);
+        } else {
+            g1Cell.innerText = '-';
+            donCell.innerText = '-';
+            document.getElementById(`diff_${day}_${sub}`).innerText = '-';
+        }
+    }
+
+    function calculateDiff(day, sub, precalculatedDon = null) {
+        const donText = precalculatedDon !== null ? precalculatedDon : (() => {
+            const el = document.getElementById(`don_${day}_${sub}`);
+            return el && el.innerText !== '-' ? parseNumber(el.innerText) : NaN;
+        })();
+        
+        const jongVal = parseNumber(document.getElementById(`jong_${day}_${sub}`).value);
+        const diffCell = document.getElementById(`diff_${day}_${sub}`);
+
+        if (!isNaN(donText) && !isNaN(jongVal)) {
+            const diff = jongVal - donText;
+            const sign = diff > 0 ? '+' : '';
+            diffCell.innerText = sign + Math.round(diff).toLocaleString();
+        } else {
+            diffCell.innerText = '-';
+        }
+    }
+
+    function saveData() {
+        const data = {
+            commonExchange: document.getElementById('commonExchange').value,
+            rowCounts: rowCounts,
+            rows: {}
+        };
+        for (let i = 1; i <= DAYS_COUNT; i++) {
+            for (let j = 1; j <= rowCounts[i]; j++) {
+                let timeCell = document.getElementById(`time_${i}_${j}`);
+                data.rows[`${i}_${j}`] = {
+                    intl: document.getElementById(`intl_${i}_${j}`).value,
+                    ex: document.getElementById(`ex_${i}_${j}`).value,
+                    jong: document.getElementById(`jong_${i}_${j}`).value,
+                    memo: document.getElementById(`memo_${i}_${j}`).value,
+                    time: timeCell ? timeCell.innerText : '-'
+                };
+            }
+        }
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        alert('저장되었습니다!');
+    }
+
+    function loadData() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (!saved) return;
+        try {
+            const data = JSON.parse(saved);
+            if (data.commonExchange) {
+                document.getElementById('commonExchange').value = data.commonExchange;
+            }
+            if (data.rowCounts) {
+                rowCounts = data.rowCounts;
+                renderTableStructure();
+            }
+            if (data.rows) {
+                for (let key in data.rows) {
+                    let parts = key.split('_');
+                    let i = parseInt(parts[0]), j = parseInt(parts[1]);
+                    let intlElem = document.getElementById(`intl_${i}_${j}`);
+                    let exElem = document.getElementById(`ex_${i}_${j}`);
+                    let jongElem = document.getElementById(`jong_${i}_${j}`);
+                    let memoElem = document.getElementById(`memo_${i}_${j}`);
+                    let timeCell = document.getElementById(`time_${i}_${j}`);
+                    
+                    if (intlElem && exElem) {
+                        intlElem.value = data.rows[key].intl || '';
+                        exElem.value = data.rows[key].ex || '';
+                        if (jongElem) jongElem.value = data.rows[key].jong || '';
+                        if (memoElem) memoElem.value = data.rows[key].memo || '';
+                        if (timeCell && data.rows[key].time) timeCell.innerText = data.rows[key].time;
+                        calculateRow(i, j);
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('데이터 로드 실패', e);
+        }
+    }
+
+    function backupData() {
+        const data = localStorage.getItem(STORAGE_KEY) || '{}';
+        try {
+            navigator.clipboard.writeText(data);
+            alert('백업 데이터가 클립보드에 복사되었습니다! 원하는 곳에 붙여넣기 하세요.');
+        } catch (err) {
+            prompt('아래 텍스트를 모두 복사해 두세요:', data);
+        }
+    }
+
+    function openRestoreModal() {
+        document.getElementById('restoreModal').style.display = 'flex';
+    }
+
+    function closeRestoreModal() {
+        document.getElementById('restoreModal').style.display = 'none';
+    }
+
+    function applyTextRestore() {
+        const text = document.getElementById('restoreTextArea').value.trim();
+        if (!text) {
+            alert('붙여넣은 내용이 없습니다.');
+            return;
+        }
+        try {
+            JSON.parse(text);
+            localStorage.setItem(STORAGE_KEY, text);
+            alert('데이터가 성공적으로 복구되었습니다!');
+            location.reload();
+        } catch (err) {
+            alert('올바른 백업 형식(JSON)이 아닙니다. 코드를 다시 확인해 주세요.');
+        }
+    }
+
+    function resetData() {
+        if (confirm('모든 데이터를 초기화하시겠습니까?')) {
+            localStorage.removeItem(STORAGE_KEY);
+            rowCounts = Array(DAYS_COUNT + 1).fill(1);
+            initTable();
+            document.getElementById('commonExchange').value = '';
+        }
+    }
+
+    function openChart() {
+        document.getElementById('chartModal').style.display = 'flex';
+        renderChart();
+    }
+
+    function closeChart() {
+        document.getElementById('chartModal').style.display = 'none';
+    }
+
+    // 진짜 주식 캔들(몸통 + 위아래 꼬리) 구현 및 완벽 정렬 렌더링 로직
+    function renderChart() {
+        const labels = [];
+        const candleDonData = [];
+        const candleJongData = [];
+
+        for (let i = 1; i <= DAYS_COUNT; i++) {
+            labels.push(`${i}일`);
+            let count = rowCounts[i];
+            let dayDons = [];
+            let dayJongs = [];
+
+            for (let j = 1; j <= count; j++) {
+                const donText = document.getElementById(`don_${i}_${j}`).innerText;
+                if (donText !== '-') {
+                    dayDons.push(parseNumber(donText));
+                }
+                const jongElem = document.getElementById(`jong_${i}_${j}`);
+                if (jongElem && jongElem.value) {
+                    dayJongs.push(parseNumber(jongElem.value));
+                }
+            }
+
+            if (dayDons.length > 0) {
+                let open = dayDons[0];
+                let close = dayDons[dayDons.length - 1];
+                let high = Math.max(...dayDons);
+                let low = Math.min(...dayDons);
+                // Chart.js 바형태에서 [저가, 고가] 꼬리 표현을 위한 구조체
+                candleDonData.push({ o: open, h: high, l: low, c: close, y: [low, high] });
+            } else {
+                candleDonData.push(null);
+            }
+
+            if (dayJongs.length > 0) {
+                let open = dayJongs[0];
+                let close = dayJongs[dayJongs.length - 1];
+                let high = Math.max(...dayJongs);
+                let low = Math.min(...dayJongs);
+                candleJongData.push({ o: open, h: high, l: low, c: close, y: [low, high] });
+            } else {
+                candleJongData.push(null);
+            }
+        }
+
+        const ctx = document.getElementById('goldChart').getContext('2d');
+        if (goldChartInstance) {
+            goldChartInstance.destroy();
+        }
+
+        goldChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: '종로시세 (실거래가 캔들)',
+                        data: candleJongData.map(d => d ? [d.l, d.h] : null),
+                        backgroundColor: '#dc2626',
+                        borderColor: '#dc2626',
+                        borderWidth: 1.5,
+                        borderRadius: 1,
+                        barPercentage: 0.4,
+                        categoryPercentage: 0.6
+                    },
+                    {
+                        label: '1돈원화 (국제가환산 캔들)',
+                        data: candleDonData.map(d => d ? [d.l, d.h] : null),
+                        backgroundColor: '#2563eb',
+                        borderColor: '#2563eb',
+                        borderWidth: 1.5,
+                        borderRadius: 1,
+                        barPercentage: 0.4,
+                        categoryPercentage: 0.6
+                    }
+                ]
             },
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    enabled: false, // 기본 툴팁 대신 상단 패널 활용
-                    external: function(context) {
-                        const tooltipModel = context.tooltip;
-                        const panel = document.getElementById('info-panel');
-                        
-                        if (tooltipModel.opacity === 0 || !tooltipModel.dataPoints.length) {
-                            return;
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        ticks: {
+                            autoSkip: false
                         }
-
-                        const index = tooltipModel.dataPoints[0].dataIndex;
-                        const d = stockData[index];
-                        const diff = d.close - d.open;
-                        const rate = ((diff / d.open) * 100).toFixed(2);
-                        const sign = diff >= 0 ? '+' : '';
-                        const colorStyle = diff >= 0 ? 'color: #ff4d4d;' : 'color: #4d79ff;';
-
-                        panel.innerHTML = `
-                            <div><span>날짜:</span> <strong>${d.date}</strong></div>
-                            <div><span>시가:</span> ${d.open.toLocaleString()}</div>
-                            <div><span>고가:</span> ${d.high.toLocaleString()}</div>
-                            <div><span>저가:</span> ${d.low.toLocaleString()}</div>
-                            <div><span>종가:</span> <strong style="${colorStyle}">${d.close.toLocaleString()} (${sign}${rate}%)</strong></div>
-                            <div><span>거래량:</span> ${d.volume.toLocaleString()}</div>
-                        `;
+                    },
+                    y: {
+                        beginAtZero: false,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString() + '원';
+                            }
+                        }
                     }
                 },
-                zoom: {
-                    pan: { enabled: true, mode: 'x' },
-                    zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }
-                }
-            },
-            scales: {
-                x: {
-                    grid: { display: false }, // 바둑판 세로선 제거
-                    ticks: { color: '#888', maxTicksLimit: 8 }
-                },
-                y: {
-                    grid: { display: false }, // 바둑판 가로선 제거
-                    ticks: { color: '#888', position: 'right' }
-                }
-            }
-        },
-        plugins: [crosshairPlugin]
-    });
-
-    // 2. 거래량 차트 생성 (바둑판 격자 완전 제거 및 상단과 X축 싱크 맞춤)
-    const volumeCtx = document.getElementById('volumeChart').getContext('2d');
-    const volumeChart = new Chart(volumeCtx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                data: stockData.map(d => d.volume),
-                backgroundColor: stockData.map(d => d.close >= d.open ? 'rgba(255, 77, 77, 0.7)' : 'rgba(77, 121, 255, 0.7)'),
-                barPercentage: 0.9,
-                categoryPercentage: 0.9
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: false,
-            plugins: {
-                legend: { display: false },
-                tooltip: { enabled: false }
-            },
-            scales: {
-                x: {
-                    grid: { display: false },
-                    ticks: { display: false } // 아래쪽 거래량 차트 날짜 중복 표시 방지
-                },
-                y: {
-                    grid: { display: false },
-                    ticks: { color: '#888', maxTicksLimit: 3, position: 'right' }
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let idx = context.dataIndex;
+                                let datasetIdx = context.datasetIndex;
+                                let target = datasetIdx === 0 ? candleJongData[idx] : candleDonData[idx];
+                                if (!target) return '';
+                                return `${context.dataset.label} -> 시가: ${target.o.toLocaleString()} | 고가: ${target.h.toLocaleString()} | 저가: ${target.l.toLocaleString()} | 종가: ${target.c.toLocaleString()}`;
+                            }
+                        }
+                    }
                 }
             }
-        }
-    });
+        });
+    }
 
-    // 줌 리셋 버튼 기능
-    document.getElementById('resetZoomBtn').addEventListener('click', () => {
-        priceChart.resetZoom();
-    });
+    window.onload = initTable;
 </script>
 
 </body>
