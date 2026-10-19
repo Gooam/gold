@@ -236,7 +236,7 @@
             overflow-x: auto;
         }
         #goldChartBox {
-            min-width: 750px; 
+            min-width: 700px; 
             height: 100%;
         }
     </style>
@@ -649,14 +649,55 @@
         document.getElementById('chartModal').style.display = 'none';
     }
 
-    // 바둑판 격자 완전 제거, 두 캔들 밀착 정렬, 툴팁 간결화 적용 로직
+    // 진짜 주식 캔들(위아래 꼬리 + 두툼한 시가/종가 몸통) 커스텀 플러그인 렌더러
+    const candlestickPlugin = {
+        id: 'candlestickPlugin',
+        afterDatasetsDraw(chart) {
+            const { ctx, scales: { x, y } } = chart;
+            chart.data.datasets.forEach((dataset, datasetIndex) => {
+                const meta = chart.getDatasetMeta(datasetIndex);
+                if (meta.hidden) return;
+                meta.data.forEach((element, index) => {
+                    const raw = dataset.data[index];
+                    if (!raw) return;
+                    const { o, h, l, c } = raw;
+                    const xCoord = element.x;
+                    const yHigh = y.getPixelForValue(h);
+                    const yLow = y.getPixelForValue(l);
+                    const yOpen = y.getPixelForValue(o);
+                    const yClose = y.getPixelForValue(c);
+
+                    ctx.save();
+                    ctx.strokeStyle = dataset.borderColor;
+                    ctx.fillStyle = dataset.backgroundColor;
+                    ctx.lineWidth = 2;
+
+                    // 1. 위아래 꼬리 선 (고가 ~ 저가)
+                    ctx.beginPath();
+                    ctx.moveTo(xCoord, yHigh);
+                    ctx.lineTo(xCoord, yLow);
+                    ctx.stroke();
+
+                    // 2. 시가 ~ 종가 두툼한 몸통 캔들
+                    const barWidth = 8; // 캔들 몸통 두께
+                    const topY = Math.min(yOpen, yClose);
+                    const bodyHeight = Math.max(Math.abs(yOpen - yClose), 2); // 최소 두께 보장
+                    ctx.fillRect(xCoord - barWidth / 2, topY, barWidth, bodyHeight);
+                    ctx.strokeRect(xCoord - barWidth / 2, topY, barWidth, bodyHeight);
+
+                    ctx.restore();
+                });
+            });
+        }
+    };
+
     function renderChart() {
         const labels = [];
         const candleDonData = [];
         const candleJongData = [];
 
+        // 데이터가 실제로 존재하는 날짜들만 컴팩트하게 추출하여 간격을 좁힘
         for (let i = 1; i <= DAYS_COUNT; i++) {
-            labels.push(`${i}일`);
             let count = rowCounts[i];
             let dayDons = [];
             let dayJongs = [];
@@ -672,24 +713,28 @@
                 }
             }
 
-            if (dayDons.length > 0) {
-                let open = dayDons[0];
-                let close = dayDons[dayDons.length - 1];
-                let high = Math.max(...dayDons);
-                let low = Math.min(...dayDons);
-                candleDonData.push({ o: open, h: high, l: low, c: close, y: [low, high] });
-            } else {
-                candleDonData.push(null);
-            }
+            if (dayDons.length > 0 || dayJongs.length > 0) {
+                labels.push(`${i}일`);
 
-            if (dayJongs.length > 0) {
-                let open = dayJongs[0];
-                let close = dayJongs[dayJongs.length - 1];
-                let high = Math.max(...dayJongs);
-                let low = Math.min(...dayJongs);
-                candleJongData.push({ o: open, h: high, l: low, c: close, y: [low, high] });
-            } else {
-                candleJongData.push(null);
+                if (dayDons.length > 0) {
+                    let open = dayDons[0];
+                    let close = dayDons[dayDons.length - 1];
+                    let high = Math.max(...dayDons);
+                    let low = Math.min(...dayDons);
+                    candleDonData.push({ o: open, h: high, l: low, c: close });
+                } else {
+                    candleDonData.push(null);
+                }
+
+                if (dayJongs.length > 0) {
+                    let open = dayJongs[0];
+                    let close = dayJongs[dayJongs.length - 1];
+                    let high = Math.max(...dayJongs);
+                    let low = Math.min(...dayJongs);
+                    candleJongData.push({ o: open, h: high, l: low, c: close });
+                } else {
+                    candleJongData.push(null);
+                }
             }
         }
 
@@ -699,29 +744,23 @@
         }
 
         goldChartInstance = new Chart(ctx, {
-            type: 'bar',
+            type: 'line', // 기본 라인형태로 두고 커스텀 캔들 플러그인으로 그림
             data: {
                 labels: labels,
                 datasets: [
                     {
                         label: '종로시세',
-                        data: candleJongData.map(d => d ? [d.l, d.h] : null),
+                        data: candleJongData,
                         backgroundColor: '#dc2626',
                         borderColor: '#dc2626',
-                        borderWidth: 2,
-                        borderRadius: 1,
-                        barPercentage: 0.9,       // 두 막대가 서로 밀착하도록 폭을 넓힘
-                        categoryPercentage: 0.5
+                        pointRadius: 0
                     },
                     {
                         label: '1돈원화',
-                        data: candleDonData.map(d => d ? [d.l, d.h] : null),
+                        data: candleDonData,
                         backgroundColor: '#2563eb',
                         borderColor: '#2563eb',
-                        borderWidth: 2,
-                        borderRadius: 1,
-                        barPercentage: 0.9,
-                        categoryPercentage: 0.5
+                        pointRadius: 0
                     }
                 ]
             },
@@ -730,11 +769,11 @@
                 maintainAspectRatio: false,
                 scales: {
                     x: {
-                        grid: { display: false }, // 바둑판(세로선) 완벽 제거
+                        grid: { display: false },
                         ticks: { autoSkip: false }
                     },
                     y: {
-                        grid: { display: false }, // 바둑판(가로선) 완벽 제거
+                        grid: { display: false },
                         beginAtZero: false,
                         ticks: {
                             callback: function(value) {
@@ -757,7 +796,6 @@
                         mode: 'index',
                         intersect: false,
                         callbacks: {
-                            // 툴팁 글씨를 줄여서 한눈에 들어오도록 간결하게 압축
                             label: function(context) {
                                 let idx = context.dataIndex;
                                 let datasetIdx = context.datasetIndex;
@@ -768,7 +806,8 @@
                         }
                     }
                 }
-            }
+            },
+            plugins: [candlestickPlugin]
         });
     }
 
