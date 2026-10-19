@@ -236,7 +236,7 @@
             overflow-x: auto;
         }
         #goldChartBox {
-            min-width: 700px; 
+            min-width: 650px; 
             height: 100%;
         }
     </style>
@@ -649,54 +649,12 @@
         document.getElementById('chartModal').style.display = 'none';
     }
 
-    // 진짜 주식 캔들(위아래 꼬리 + 두툼한 시가/종가 몸통) 커스텀 플러그인 렌더러
-    const candlestickPlugin = {
-        id: 'candlestickPlugin',
-        afterDatasetsDraw(chart) {
-            const { ctx, scales: { x, y } } = chart;
-            chart.data.datasets.forEach((dataset, datasetIndex) => {
-                const meta = chart.getDatasetMeta(datasetIndex);
-                if (meta.hidden) return;
-                meta.data.forEach((element, index) => {
-                    const raw = dataset.data[index];
-                    if (!raw) return;
-                    const { o, h, l, c } = raw;
-                    const xCoord = element.x;
-                    const yHigh = y.getPixelForValue(h);
-                    const yLow = y.getPixelForValue(l);
-                    const yOpen = y.getPixelForValue(o);
-                    const yClose = y.getPixelForValue(c);
-
-                    ctx.save();
-                    ctx.strokeStyle = dataset.borderColor;
-                    ctx.fillStyle = dataset.backgroundColor;
-                    ctx.lineWidth = 2;
-
-                    // 1. 위아래 꼬리 선 (고가 ~ 저가)
-                    ctx.beginPath();
-                    ctx.moveTo(xCoord, yHigh);
-                    ctx.lineTo(xCoord, yLow);
-                    ctx.stroke();
-
-                    // 2. 시가 ~ 종가 두툼한 몸통 캔들
-                    const barWidth = 8; // 캔들 몸통 두께
-                    const topY = Math.min(yOpen, yClose);
-                    const bodyHeight = Math.max(Math.abs(yOpen - yClose), 2); // 최소 두께 보장
-                    ctx.fillRect(xCoord - barWidth / 2, topY, barWidth, bodyHeight);
-                    ctx.strokeRect(xCoord - barWidth / 2, topY, barWidth, bodyHeight);
-
-                    ctx.restore();
-                });
-            });
-        }
-    };
-
+    // 안정적인 고속 렌더링 및 컴팩트 간격 정렬
     function renderChart() {
         const labels = [];
         const candleDonData = [];
         const candleJongData = [];
 
-        // 데이터가 실제로 존재하는 날짜들만 컴팩트하게 추출하여 간격을 좁힘
         for (let i = 1; i <= DAYS_COUNT; i++) {
             let count = rowCounts[i];
             let dayDons = [];
@@ -721,7 +679,7 @@
                     let close = dayDons[dayDons.length - 1];
                     let high = Math.max(...dayDons);
                     let low = Math.min(...dayDons);
-                    candleDonData.push({ o: open, h: high, l: low, c: close });
+                    candleDonData.push({ o: open, h: high, l: low, c: close, y: [low, high] });
                 } else {
                     candleDonData.push(null);
                 }
@@ -731,7 +689,7 @@
                     let close = dayJongs[dayJongs.length - 1];
                     let high = Math.max(...dayJongs);
                     let low = Math.min(...dayJongs);
-                    candleJongData.push({ o: open, h: high, l: low, c: close });
+                    candleJongData.push({ o: open, h: high, l: low, c: close, y: [low, high] });
                 } else {
                     candleJongData.push(null);
                 }
@@ -744,23 +702,29 @@
         }
 
         goldChartInstance = new Chart(ctx, {
-            type: 'line', // 기본 라인형태로 두고 커스텀 캔들 플러그인으로 그림
+            type: 'bar',
             data: {
                 labels: labels,
                 datasets: [
                     {
                         label: '종로시세',
-                        data: candleJongData,
+                        data: candleJongData.map(d => d ? [d.l, d.h] : null),
                         backgroundColor: '#dc2626',
                         borderColor: '#dc2626',
-                        pointRadius: 0
+                        borderWidth: 3,
+                        borderRadius: 2,
+                        barPercentage: 0.8,
+                        categoryPercentage: 0.65
                     },
                     {
                         label: '1돈원화',
-                        data: candleDonData,
+                        data: candleDonData.map(d => d ? [d.l, d.h] : null),
                         backgroundColor: '#2563eb',
                         borderColor: '#2563eb',
-                        pointRadius: 0
+                        borderWidth: 3,
+                        borderRadius: 2,
+                        barPercentage: 0.8,
+                        categoryPercentage: 0.65
                     }
                 ]
             },
@@ -773,7 +737,7 @@
                         ticks: { autoSkip: false }
                     },
                     y: {
-                        grid: { display: false },
+                        grid: { color: '#f1f5f9' },
                         beginAtZero: false,
                         ticks: {
                             callback: function(value) {
@@ -806,8 +770,7 @@
                         }
                     }
                 }
-            },
-            plugins: [candlestickPlugin]
+            }
         });
     }
 
