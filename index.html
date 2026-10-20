@@ -378,31 +378,31 @@
 
     let currentMonthKey = getCurrentYearMonth();
 
-    // 확실하고 강력한 이전 데이터 구출 로직
+    // 완벽한 구버전 데이터 흡수 및 복구 로직
     function rescueOldData() {
-        // 1. 기존 구버전 키('goldData_v38') 확인
-        let savedRaw = localStorage.getItem('goldData_v38');
+        // 1. 구버전 키 'goldData_v38'이 있는지 직접 확인
+        let oldData = localStorage.getItem('goldData_v38');
         
-        // 2. 만약 없다면 로컬스토리지 전체를 뒤져서 가장 적절한 데이터 탐색
-        if (!savedRaw) {
+        // 2. 만약 없다면 스토리지 전체에서 'rows'가 들어있는 가장 유효한 데이터를 스캔
+        if (!oldData) {
             for (let i = 0; i < localStorage.length; i++) {
                 let k = localStorage.key(i);
                 if (k && k.includes('goldData')) {
                     let val = localStorage.getItem(k);
-                    if (val && val.includes('rows')) {
-                        savedRaw = val;
+                    if (val && val.includes('rows') && val.length > 30) {
+                        oldData = val;
                         break;
                     }
                 }
             }
         }
 
-        // 3. 구출한 데이터가 있다면 현재 선택된 월 키에 강제로 이관
-        if (savedRaw) {
+        // 3. 구출한 데이터를 현재 월 키에 강제로 밀어 넣음 (이미 데이터가 있어도 구버전 데이터가 더 알차면 덮어쓰기 방지 위해 비어있을 때만)
+        if (oldData) {
             let targetKey = BASE_STORAGE_KEY + currentMonthKey;
-            let existing = localStorage.getItem(targetKey);
-            if (!existing || existing.length < 50) {
-                localStorage.setItem(targetKey, savedRaw);
+            let currentVal = localStorage.getItem(targetKey);
+            if (!currentVal || currentVal.length < 50) {
+                localStorage.setItem(targetKey, oldData);
             }
         }
     }
