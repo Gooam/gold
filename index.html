@@ -28,6 +28,53 @@
             margin: 2px 0 6px 0;
             color: #0f172a;
         }
+        
+        /* 월별 선택 바 스타일 */
+        .month-selector-bar {
+            background: #0f172a;
+            padding: 6px 8px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .month-selector-bar select {
+            flex: 2;
+            padding: 5px 8px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            background: white;
+            color: #0f172a;
+            height: 30px;
+        }
+        .btn-new-month {
+            flex: 1.2;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 5px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            height: 30px;
+        }
+        .btn-del-month {
+            flex: 0.8;
+            background-color: #dc2626;
+            color: white;
+            border: none;
+            padding: 5px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            height: 30px;
+        }
+
         .common-controls {
             background: #f1f5f9;
             padding: 4px 6px;
@@ -75,7 +122,7 @@
         .table-responsive {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
-            max-height: 84vh;
+            max-height: 80vh;
         }
         table {
             width: 100%;
@@ -246,17 +293,26 @@
 <div class="container">
     <h1>킷코 금시세 실시간 일지</h1>
 
+    <!-- 월별 선택 및 추가 바 -->
+    <div class="month-selector-bar">
+        <select id="monthSelector" onchange="switchMonth()">
+            <!-- 동적으로 월 리스트가 채워집니다 -->
+        </select>
+        <button class="btn-new-month" onclick="createNewMonth()">+ 새 월 추가</button>
+        <button class="btn-del-month" onclick="deleteCurrentMonth()">삭제</button>
+    </div>
+
     <div class="common-controls">
         <label for="commonExchange">공통 적용 환율:</label>
-        <input type="text" id="commonExchange" placeholder="예: 1,380" oninput="handleInputFormatting(this)" onblur="applyCommonExchange()">
+        <input type="text" id="commonExchange" placeholder="예: 1,380" oninput="handleInputFormatting(this); triggerAutoSave();" onblur="applyCommonExchange()">
     </div>
 
     <div class="actions-top">
-        <button class="btn-save" onclick="saveData()">저장</button>
+        <button class="btn-save" onclick="saveData(true)">저장완료</button>
         <button class="btn-backup" onclick="backupData()">백업(복사)</button>
         <button class="btn-restore" onclick="openRestoreModal()">복구(붙여넣기)</button>
         <button class="btn-chart" onclick="openChart()">그래프</button>
-        <button class="btn-reset" onclick="resetData()">전체 초기화</button>
+        <button class="btn-reset" onclick="resetData()">현재월 초기화</button>
     </div>
 
     <div class="table-responsive">
@@ -284,7 +340,7 @@
 <div id="chartModal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3>🕯️ 금시세 쌍둥이 캔들 차트 (원화환산 vs 종로시세)</h3>
+            <h3 id="chartTitle">🕯️ 금시세 쌍둥이 캔들 차트</h3>
             <button class="btn-close" onclick="closeChart()">닫기</button>
         </div>
         <div class="chart-container">
@@ -313,29 +369,30 @@
     const DAYS_COUNT = 31;
     let rowCounts = Array(DAYS_COUNT + 1).fill(1);
     let goldChartInstance = null;
-    const STORAGE_KEY = 'goldData_v38';
+    const STORAGE_PREFIX = 'goldData_v39_';
+    let autoSaveTimer = null;
 
-    // 브라우저에 숨어있는 데이터를 찾아 현재 키로 강제 복구하는 장치
-    function rescueDataOnStart() {
-        let currentVal = localStorage.getItem(STORAGE_KEY);
-        if (!currentVal || currentVal.length < 50) {
-            for (let i = 0; i < localStorage.length; i++) {
-                let k = localStorage.key(i);
-                if (k && k.includes('goldData')) {
-                    let val = localStorage.getItem(k);
-                    if (val && val.includes('rows') && val.length > 50) {
-                        localStorage.setItem(STORAGE_KEY, val);
-                        break;
-                    }
-                }
-            }
-        }
+    function getCurrentYearMonth() {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        return `${y}-${m}`;
     }
+
+    let currentMonthKey = getCurrentYearMonth();
 
     function parseNumber(val) {
         if (!val) return NaN;
         const num = val.toString().replace(/,/g, '');
         return parseFloat(num);
+    }
+
+    // 실시간 자동 저장 타이머
+    function triggerAutoSave() {
+        clearTimeout(autoSaveTimer);
+        autoSaveTimer = setTimeout(() => {
+            saveData(false);
+        }, 300);
     }
 
     function handleInputFormatting(inputElem, callback, day, sub) {
@@ -358,6 +415,7 @@
         } catch (e) {}
 
         if (callback) callback();
+        triggerAutoSave();
     }
 
     function updateInputTime(day, sub) {
@@ -381,13 +439,91 @@
         }
     }
 
-    function initTable() {
-        rescueDataOnStart();
-        renderTableStructure();
+    function initApp() {
+        initMonthSelector();
+        initTableStructure();
         loadData();
     }
 
-    function renderTableStructure() {
+    function getStoredMonths() {
+        let months = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            let key = localStorage.key(i);
+            if (key && key.startsWith(STORAGE_PREFIX)) {
+                months.push(key.replace(STORAGE_PREFIX, ''));
+            }
+        }
+        // 구버전 데이터(goldData_v38)가 있다면 현재 월 데이터로 안전 흡수
+        let oldData = localStorage.getItem('goldData_v38');
+        if (oldData && months.length === 0) {
+            let cur = getCurrentYearMonth();
+            localStorage.setItem(STORAGE_PREFIX + cur, oldData);
+            months.push(cur);
+        }
+
+        if (months.length === 0) {
+            months.push(getCurrentYearMonth());
+        }
+        months.sort().reverse();
+        return months;
+    }
+
+    function initMonthSelector() {
+        const selector = document.getElementById('monthSelector');
+        const months = getStoredMonths();
+        
+        if (!months.includes(currentMonthKey)) {
+            currentMonthKey = months[0];
+        }
+
+        let html = '';
+        months.forEach(m => {
+            let selected = (m === currentMonthKey) ? 'selected' : '';
+            html += `<option value="${m}" ${selected}>📂 ${m} 금시세 일지</option>`;
+        });
+        selector.innerHTML = html;
+    }
+
+    function switchMonth() {
+        const selector = document.getElementById('monthSelector');
+        currentMonthKey = selector.value;
+        rowCounts = Array(DAYS_COUNT + 1).fill(1);
+        initTableStructure();
+        loadData();
+    }
+
+    function createNewMonth() {
+        let defaultVal = getCurrentYearMonth();
+        let newMonth = prompt("추가할 년도와 월을 입력하세요 (예: 2026-11):", defaultVal);
+        if (!newMonth) return;
+        newMonth = newMonth.trim();
+        if (!/^\d{4}-\d{2}$/.test(newMonth)) {
+            alert("형식이 올바르지 않습니다. YYYY-MM 형식(예: 2026-11)으로 입력해주세요.");
+            return;
+        }
+        
+        currentMonthKey = newMonth;
+        rowCounts = Array(DAYS_COUNT + 1).fill(1);
+        initMonthSelector();
+        initTableStructure();
+        saveData(false);
+        alert(`${newMonth} 일지가 생성되었습니다!`);
+    }
+
+    function deleteCurrentMonth() {
+        const months = getStoredMonths();
+        if (months.length <= 1) {
+            alert("마지막 남은 일지는 삭제할 수 없습니다.");
+            return;
+        }
+        if (confirm(`정말 [${currentMonthKey}] 일지 데이터를 완전히 삭제하시겠습니까?`)) {
+            localStorage.removeItem(STORAGE_PREFIX + currentMonthKey);
+            initMonthSelector();
+            switchMonth();
+        }
+    }
+
+    function initTableStructure() {
         const tbody = document.getElementById('tableBody');
         let html = '';
         
@@ -435,8 +571,9 @@
     function addSubRow(day) {
         saveCurrentValuesToMemory();
         rowCounts[day]++;
-        renderTableStructure();
+        initTableStructure();
         restoreValuesFromMemory();
+        saveData(false);
     }
 
     function removeSubRow(day, sub) {
@@ -455,8 +592,9 @@
         delete memoryData[`time_${day}_${rowCounts[day]}`];
 
         rowCounts[day]--;
-        renderTableStructure();
+        initTableStructure();
         restoreValuesFromMemory();
+        saveData(false);
     }
 
     let memoryData = {};
@@ -514,6 +652,7 @@
                 }
             }
         }
+        saveData(false);
     }
 
     function calculateRow(day, sub) {
@@ -556,7 +695,7 @@
         }
     }
 
-    function saveData() {
+    function saveData(showAlert = true) {
         const data = {
             commonExchange: document.getElementById('commonExchange').value,
             rowCounts: rowCounts,
@@ -574,12 +713,15 @@
                 };
             }
         }
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        alert('저장되었습니다!');
+        localStorage.setItem(STORAGE_PREFIX + currentMonthKey, JSON.stringify(data));
+        if (showAlert) {
+            alert(`[${currentMonthKey}] 안전하게 저장되었습니다!`);
+        }
     }
 
     function loadData() {
-        const saved = localStorage.getItem(STORAGE_KEY);
+        const saved = localStorage.getItem(STORAGE_PREFIX + currentMonthKey);
+        document.getElementById('commonExchange').value = '';
         if (!saved) return;
         try {
             const data = JSON.parse(saved);
@@ -588,7 +730,7 @@
             }
             if (data.rowCounts) {
                 rowCounts = data.rowCounts;
-                renderTableStructure();
+                initTableStructure();
             }
             if (data.rows) {
                 for (let key in data.rows) {
@@ -616,10 +758,10 @@
     }
 
     function backupData() {
-        const data = localStorage.getItem(STORAGE_KEY) || '{}';
+        const data = localStorage.getItem(STORAGE_PREFIX + currentMonthKey) || '{}';
         try {
             navigator.clipboard.writeText(data);
-            alert('백업 데이터가 클립보드에 복사되었습니다! 원하는 곳에 붙여넣기 하세요.');
+            alert(`[${currentMonthKey}] 백업 데이터가 클립보드에 복사되었습니다!`);
         } catch (err) {
             prompt('아래 텍스트를 모두 복사해 두세요:', data);
         }
@@ -641,7 +783,7 @@
         }
         try {
             JSON.parse(text);
-            localStorage.setItem(STORAGE_KEY, text);
+            localStorage.setItem(STORAGE_PREFIX + currentMonthKey, text);
             alert('데이터가 성공적으로 복구되었습니다!');
             location.reload();
         } catch (err) {
@@ -650,15 +792,16 @@
     }
 
     function resetData() {
-        if (confirm('모든 데이터를 초기화하시겠습니까?')) {
-            localStorage.removeItem(STORAGE_KEY);
+        if (confirm(`[${currentMonthKey}] 데이터를 초기화하시겠습니까?`)) {
+            localStorage.removeItem(STORAGE_PREFIX + currentMonthKey);
             rowCounts = Array(DAYS_COUNT + 1).fill(1);
-            initTable();
+            initTableStructure();
             document.getElementById('commonExchange').value = '';
         }
     }
 
     function openChart() {
+        document.getElementById('chartTitle').innerText = `🕯️ 금시세 쌍둥이 캔들 차트 (${currentMonthKey})`;
         document.getElementById('chartModal').style.display = 'flex';
         renderChart();
     }
@@ -837,7 +980,7 @@
         });
     }
 
-    window.onload = initTable;
+    window.onload = initApp;
 </script>
 
 </body>
