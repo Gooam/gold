@@ -315,6 +315,23 @@
     let goldChartInstance = null;
     const STORAGE_KEY = 'goldData_v38';
 
+    // 브라우저에 숨어있는 데이터를 찾아 현재 키로 강제 복구하는 장치
+    function rescueDataOnStart() {
+        let currentVal = localStorage.getItem(STORAGE_KEY);
+        if (!currentVal || currentVal.length < 50) {
+            for (let i = 0; i < localStorage.length; i++) {
+                let k = localStorage.key(i);
+                if (k && k.includes('goldData')) {
+                    let val = localStorage.getItem(k);
+                    if (val && val.includes('rows') && val.length > 50) {
+                        localStorage.setItem(STORAGE_KEY, val);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
     function parseNumber(val) {
         if (!val) return NaN;
         const num = val.toString().replace(/,/g, '');
@@ -365,6 +382,7 @@
     }
 
     function initTable() {
+        rescueDataOnStart();
         renderTableStructure();
         loadData();
     }
