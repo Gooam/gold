@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>킷코 금시세 실시간 일지</title>
+    <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
@@ -27,6 +28,8 @@
             margin: 2px 0 6px 0;
             color: #0f172a;
         }
+        
+        /* 월별 선택 바 스타일 */
         .month-selector-bar {
             background: #0f172a;
             padding: 6px 8px;
@@ -71,6 +74,7 @@
             cursor: pointer;
             height: 30px;
         }
+
         .common-controls {
             background: #f1f5f9;
             padding: 4px 6px;
@@ -114,6 +118,7 @@
         .btn-restore { background-color: #0d9488; }
         .btn-chart { background-color: #9333ea; }
         .btn-reset { background-color: #dc2626; }
+
         .table-responsive {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
@@ -142,6 +147,7 @@
             top: 0;
             z-index: 10;
         }
+        
         th:first-child, td.day-col {
             position: sticky;
             left: 0;
@@ -155,8 +161,14 @@
             z-index: 15;
             background-color: #f1f5f9;
         }
-        tr.day-group-end { border-bottom: 1px solid #cbd5e1; }
-        tr.sub-row { border-bottom: 1px solid #e2e8f0; }
+
+        tr.day-group-end {
+            border-bottom: 1px solid #cbd5e1;
+        }
+        tr.sub-row {
+            border-bottom: 1px solid #e2e8f0;
+        }
+
         .day-cell-content {
             display: flex;
             align-items: center;
@@ -164,6 +176,7 @@
             padding: 0 3px;
             gap: 2px;
         }
+
         .btn-add {
             background-color: #16a34a;
             color: white;
@@ -182,6 +195,7 @@
             border-radius: 2px;
             cursor: pointer;
         }
+        
         input.data-input {
             width: 76px;
             padding: 2px 4px;
@@ -196,7 +210,17 @@
             outline: 1.5px solid #2563eb;
             background: #ffffff;
         }
-        .red-readonly-cell, .red-diff-cell {
+        
+        .red-readonly-cell {
+            background-color: #f8fafc;
+            color: #dc2626;
+            text-align: right;
+            padding-right: 4px;
+            font-weight: 600;
+            min-width: 76px;
+            font-size: 0.8rem;
+        }
+        .red-diff-cell {
             background-color: #f8fafc;
             color: #dc2626;
             text-align: right;
@@ -212,6 +236,7 @@
             font-size: 0.75rem;
             min-width: 65px;
         }
+
         #chartModal, #restoreModal {
             display: none;
             position: fixed;
@@ -268,8 +293,11 @@
 <div class="container">
     <h1>킷코 금시세 실시간 일지</h1>
 
+    <!-- 월별 선택 및 추가 바 -->
     <div class="month-selector-bar">
-        <select id="monthSelector" onchange="switchMonth()"></select>
+        <select id="monthSelector" onchange="switchMonth()">
+            <!-- 동적으로 월 리스트가 채워집니다 -->
+        </select>
         <button class="btn-new-month" onclick="createNewMonth()">+ 새 월 추가</button>
         <button class="btn-del-month" onclick="deleteCurrentMonth()">삭제</button>
     </div>
@@ -302,11 +330,13 @@
                     <th>입력시간</th>
                 </tr>
             </thead>
-            <tbody id="tableBody"></tbody>
+            <tbody id="tableBody">
+            </tbody>
         </table>
     </div>
 </div>
 
+<!-- 캔들 스타일 차트 모달 -->
 <div id="chartModal">
     <div class="modal-content">
         <div class="modal-header">
@@ -322,6 +352,7 @@
     </div>
 </div>
 
+<!-- 텍스트 복구 모달 -->
 <div id="restoreModal">
     <div class="modal-content">
         <div class="modal-header">
@@ -356,14 +387,18 @@
         return parseFloat(num);
     }
 
+    // 실시간 자동 저장 타이머
     function triggerAutoSave() {
         clearTimeout(autoSaveTimer);
-        autoSaveTimer = setTimeout(() => { saveData(false); }, 300);
+        autoSaveTimer = setTimeout(() => {
+            saveData(false);
+        }, 300);
     }
 
     function handleInputFormatting(inputElem, callback, day, sub) {
         let cursorPosition = inputElem.selectionStart;
         let originalLength = inputElem.value.length;
+        
         let rawVal = inputElem.value.replace(/[^\d]/g, '');
         if (rawVal) {
             inputElem.value = parseInt(rawVal, 10).toLocaleString();
@@ -372,9 +407,13 @@
             inputElem.value = '';
             checkRowEmpty(day, sub);
         }
+        
         let newLength = inputElem.value.length;
         cursorPosition = Math.max(0, cursorPosition + (newLength - originalLength));
-        try { inputElem.setSelectionRange(cursorPosition, cursorPosition); } catch (e) {}
+        try {
+            inputElem.setSelectionRange(cursorPosition, cursorPosition);
+        } catch (e) {}
+
         if (callback) callback();
         triggerAutoSave();
     }
@@ -414,12 +453,14 @@
                 months.push(key.replace(STORAGE_PREFIX, ''));
             }
         }
+        // 구버전 데이터(goldData_v38)가 있다면 현재 월 데이터로 안전 흡수
         let oldData = localStorage.getItem('goldData_v38');
         if (oldData && months.length === 0) {
             let cur = getCurrentYearMonth();
             localStorage.setItem(STORAGE_PREFIX + cur, oldData);
             months.push(cur);
         }
+
         if (months.length === 0) {
             months.push(getCurrentYearMonth());
         }
@@ -430,9 +471,11 @@
     function initMonthSelector() {
         const selector = document.getElementById('monthSelector');
         const months = getStoredMonths();
+        
         if (!months.includes(currentMonthKey)) {
             currentMonthKey = months[0];
         }
+
         let html = '';
         months.forEach(m => {
             let selected = (m === currentMonthKey) ? 'selected' : '';
@@ -458,6 +501,7 @@
             alert("형식이 올바르지 않습니다. YYYY-MM 형식(예: 2026-11)으로 입력해주세요.");
             return;
         }
+        
         currentMonthKey = newMonth;
         rowCounts = Array(DAYS_COUNT + 1).fill(1);
         initMonthSelector();
@@ -482,12 +526,15 @@
     function initTableStructure() {
         const tbody = document.getElementById('tableBody');
         let html = '';
+        
         for (let i = 1; i <= DAYS_COUNT; i++) {
             let count = rowCounts[i];
             for (let j = 1; j <= count; j++) {
                 let isLast = (j === count);
                 let rowClass = isLast ? 'day-group-end' : 'sub-row';
+                
                 html += `<tr class="${rowClass}" data-day="${i}" data-sub="${j}">`;
+                
                 if (j === 1) {
                     html += `
                         <td class="day-col" rowspan="${count}">
@@ -498,6 +545,7 @@
                         </td>
                     `;
                 }
+
                 html += `
                     <td><input type="text" inputmode="numeric" class="data-input" id="intl_${i}_${j}" placeholder="국제가" oninput="handleInputFormatting(this, () => calculateRow(${i}, ${j}), ${i}, ${j})"></td>
                     <td><input type="text" inputmode="numeric" class="data-input" id="ex_${i}_${j}" placeholder="환율" oninput="handleInputFormatting(this, () => calculateRow(${i}, ${j}), ${i}, ${j})"></td>
@@ -508,11 +556,12 @@
                     <td>
                         <div style="display: flex; gap: 2px; align-items: center; justify-content: center;">
                             <input type="text" inputmode="numeric" class="data-input" id="memo_${i}_${j}" placeholder="자료금" oninput="handleInputFormatting(this, null, ${i}, ${j})" style="width: 76px;">
-                            ${j > 1 ? `<button class="btn-del" onclick="removeSubRow(${i}, ${j})">삭제</button>` : ''}
+                            ${j > 1 ? `<button class="btn-del" onclick="removeSubRow(${i},${j})">삭제</button>` : ''}
                         </div>
                     </td>
                     <td class="time-cell" id="time_${i}_${j}">-</td>
                 `;
+
                 html += `</tr>`;
             }
         }
@@ -541,6 +590,7 @@
         delete memoryData[`jong_${day}_${rowCounts[day]}`];
         delete memoryData[`memo_${day}_${rowCounts[day]}`];
         delete memoryData[`time_${day}_${rowCounts[day]}`];
+
         rowCounts[day]--;
         initTableStructure();
         restoreValuesFromMemory();
@@ -608,13 +658,17 @@
     function calculateRow(day, sub) {
         const intlVal = parseNumber(document.getElementById(`intl_${day}_${sub}`).value);
         const exVal = parseNumber(document.getElementById(`ex_${day}_${sub}`).value);
+
         const g1Cell = document.getElementById(`g1_${day}_${sub}`);
         const donCell = document.getElementById(`don_${day}_${sub}`);
+
         if (!isNaN(intlVal) && !isNaN(exVal)) {
             const g1 = (intlVal * exVal) / 31.1035;
             const don = g1 * 3.75;
+
             g1Cell.innerText = Math.round(g1).toLocaleString();
             donCell.innerText = Math.round(don).toLocaleString();
+            
             calculateDiff(day, sub, don);
         } else {
             g1Cell.innerText = '-';
@@ -628,8 +682,10 @@
             const el = document.getElementById(`don_${day}_${sub}`);
             return el && el.innerText !== '-' ? parseNumber(el.innerText) : NaN;
         })();
+        
         const jongVal = parseNumber(document.getElementById(`jong_${day}_${sub}`).value);
         const diffCell = document.getElementById(`diff_${day}_${sub}`);
+
         if (!isNaN(donText) && !isNaN(jongVal)) {
             const diff = jongVal - donText;
             const sign = diff > 0 ? '+' : '';
@@ -685,6 +741,7 @@
                     let jongElem = document.getElementById(`jong_${i}_${j}`);
                     let memoElem = document.getElementById(`memo_${i}_${j}`);
                     let timeCell = document.getElementById(`time_${i}_${j}`);
+                    
                     if (intlElem && exElem) {
                         intlElem.value = data.rows[key].intl || '';
                         exElem.value = data.rows[key].ex || '';
@@ -769,19 +826,23 @@
                     const yLow = y.getPixelForValue(l);
                     const yOpen = y.getPixelForValue(o);
                     const yClose = y.getPixelForValue(c);
+
                     ctx.save();
                     ctx.strokeStyle = dataset.borderColor;
                     ctx.fillStyle = dataset.backgroundColor;
                     ctx.lineWidth = 2;
+
                     ctx.beginPath();
                     ctx.moveTo(xCoord, yHigh);
                     ctx.lineTo(xCoord, yLow);
                     ctx.stroke();
+
                     const barWidth = 7;
                     const topY = Math.min(yOpen, yClose);
                     const bodyHeight = Math.max(Math.abs(yOpen - yClose), 3);
                     ctx.fillRect(xCoord - barWidth / 2, topY, barWidth, bodyHeight);
                     ctx.strokeRect(xCoord - barWidth / 2, topY, barWidth, bodyHeight);
+
                     ctx.restore();
                 });
             });
@@ -794,10 +855,12 @@
         const rawJongCandles = [];
         const lineDonData = [];
         const lineJongData = [];
+
         for (let i = 1; i <= DAYS_COUNT; i++) {
             let count = rowCounts[i];
             let dayDons = [];
             let dayJongs = [];
+
             for (let j = 1; j <= count; j++) {
                 const donText = document.getElementById(`don_${i}_${j}`).innerText;
                 if (donText !== '-') {
@@ -808,25 +871,30 @@
                     dayJongs.push(parseNumber(jongElem.value));
                 }
             }
+
             if (dayDons.length > 0 || dayJongs.length > 0) {
                 labels.push(`${i}일`);
+
                 if (dayDons.length > 0) {
                     let open = dayDons[0];
                     let close = dayDons[dayDons.length - 1];
                     let high = Math.max(...dayDons);
                     let low = Math.min(...dayDons);
-                    rawDonCandles.push({ o: open, h: high, l: low, c: close });
+                    let candle = { o: open, h: high, l: low, c: close };
+                    rawDonCandles.push(candle);
                     lineDonData.push((high + low) / 2);
                 } else {
                     rawDonCandles.push(null);
                     lineDonData.push(null);
                 }
+
                 if (dayJongs.length > 0) {
                     let open = dayJongs[0];
                     let close = dayJongs[dayJongs.length - 1];
                     let high = Math.max(...dayJongs);
                     let low = Math.min(...dayJongs);
-                    rawJongCandles.push({ o: open, h: high, l: low, c: close });
+                    let candle = { o: open, h: high, l: low, c: close };
+                    rawJongCandles.push(candle);
                     lineJongData.push((high + low) / 2);
                 } else {
                     rawJongCandles.push(null);
@@ -834,8 +902,12 @@
                 }
             }
         }
+
         const ctx = document.getElementById('goldChart').getContext('2d');
-        if (goldChartInstance) { goldChartInstance.destroy(); }
+        if (goldChartInstance) {
+            goldChartInstance.destroy();
+        }
+
         goldChartInstance = new Chart(ctx, {
             type: 'line',
             data: {
@@ -865,16 +937,29 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 scales: {
-                    x: { grid: { display: false }, ticks: { autoSkip: false } },
+                    x: {
+                        grid: { display: false },
+                        ticks: { autoSkip: false }
+                    },
                     y: {
                         grid: { color: '#f1f5f9' },
                         beginAtZero: false,
-                        ticks: { callback: function(value) { return value.toLocaleString() + '원'; } }
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString() + '원';
+                            }
+                        }
                     }
                 },
-                interaction: { mode: 'index', intersect: false },
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
                 plugins: {
-                    legend: { display: true, position: 'top' },
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
                     tooltip: {
                         enabled: true,
                         mode: 'index',
