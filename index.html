@@ -100,7 +100,7 @@
             background: #fff;
             padding: 4px 8px;
         }
-        /* 가로 스크롤 가능한 아담한 테이블 */
+        /* 우측 사진의 아담한 비율을 완벽히 재현한 가로 스크롤 테이블 */
         .table-wrapper {
             width: 100%;
             overflow-x: auto;
@@ -108,7 +108,7 @@
             margin-bottom: 8px;
         }
         table {
-            width: 1020px;
+            width: 820px; /* 우측 사진의 예쁜 비율에 딱 맞춘 최적화된 폭 */
             border-collapse: collapse;
         }
         th, td {
@@ -131,7 +131,6 @@
             background: #fff;
             font-size: 12px;
         }
-        /* 일자와 추가 버튼을 가로로 나란히 배치 */
         .date-cell-container {
             display: flex;
             align-items: center;
@@ -219,14 +218,14 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width: 100px;">일자</th>
-                    <th style="width: 120px;">국제가</th>
-                    <th style="width: 100px;">환율</th>
-                    <th style="width: 130px;">1g원화</th>
-                    <th style="width: 130px;">국제가(돈)</th>
-                    <th style="width: 120px;">종로시세</th>
-                    <th style="width: 110px;">차액</th>
-                    <th style="width: 150px;">자료금 / 삭제</th>
+                    <th style="width: 75px;">일자</th>
+                    <th style="width: 105px;">국제가</th>
+                    <th style="width: 90px;">환율</th>
+                    <th style="width: 110px;">1g원화</th>
+                    <th style="width: 110px;">국제가(돈)</th>
+                    <th style="width: 105px;">종로시세</th>
+                    <th style="width: 95px;">차액</th>
+                    <th style="width: 130px;">자료금 / 삭제</th>
                 </tr>
             </thead>
             <tbody id="tableBody"></tbody>
@@ -242,7 +241,7 @@
 <script>
     let db = {};
     try {
-        const saved = localStorage.getItem('kitco_gold_master_v3_db');
+        const saved = localStorage.getItem('kitco_gold_ideal_db');
         if (saved) db = JSON.parse(saved);
     } catch (e) {
         db = {};
@@ -525,7 +524,7 @@
 
     function saveDB() {
         try {
-            localStorage.setItem('kitco_gold_perfect_v3_db', JSON.stringify(db));
+            localStorage.setItem('kitco_gold_ideal_db', JSON.stringify(db));
         } catch (e) {
             console.error(e);
         }
