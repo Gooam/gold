@@ -53,20 +53,23 @@
             background: #fff;
             font-weight: bold;
         }
-        .btn-add { background: #2563eb; color: #fff; border: none; font-weight: bold; cursor: pointer; white-space: nowrap; }
+        .btn-add-month { background: #2563eb; color: #fff; border: none; font-weight: bold; cursor: pointer; white-space: nowrap; }
         .btn-del { background: #dc2626; color: #fff; border: none; font-weight: bold; cursor: pointer; white-space: nowrap; }
-        .btn-save { background: #059669; color: #fff; border: none; font-weight: bold; cursor: pointer; }
-        .btn-reset { background: #6b7280; color: #fff; border: none; cursor: pointer; }
+        .btn-save { background: #2563eb; color: #fff; border: none; font-weight: bold; cursor: pointer; }
+        .btn-backup { background: #059669; color: #fff; border: none; font-weight: bold; cursor: pointer; }
+        .btn-restore { background: #7c3aed; color: #fff; border: none; font-weight: bold; cursor: pointer; }
+        .btn-reset { background: #dc2626; color: #fff; border: none; font-weight: bold; cursor: pointer; }
         
-        .status-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #f1f5f9;
-            padding: 8px 12px;
-            border-radius: 6px;
+        .action-bar {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 4px;
             margin-bottom: 15px;
-            font-weight: bold;
+        }
+        .action-bar button {
+            padding: 8px 2px;
+            font-size: 11px;
+            text-align: center;
         }
         .exchange-box {
             margin-bottom: 15px;
@@ -101,14 +104,21 @@
             border-radius: 4px;
             background: #fff;
         }
-        td input:focus {
-            border-color: var(--primary-color);
-            outline: none;
+        .btn-day-add {
+            background: #059669;
+            color: white;
+            border: none;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            margin-top: 2px;
         }
         .krw-col {
             text-align: right;
             padding-right: 8px;
             font-weight: bold;
+            color: #dc2626;
         }
         .chart-container {
             position: relative;
@@ -122,37 +132,42 @@
 <div class="container">
     <h2>킷코 금시세 실시간 일지</h2>
 
+    <!-- 월 컨트롤 영역 -->
     <div class="top-controls">
         <select id="monthSelect" onchange="changeMonth()"></select>
-        <button class="btn-add" onclick="addNewMonth()">+ 새 월 추가</button>
+        <button class="btn-add-month" onclick="addNewMonth()">+ 새 월 추가</button>
         <button class="btn-del" onclick="deleteCurrentMonth()">삭제</button>
     </div>
 
+    <!-- 공통 환율 -->
     <div class="exchange-box">
         <label for="commonEx">공통 적용 환율:</label>
-        <input type="number" id="commonEx" placeholder="예: 1380" oninput="autoSave(); calculateAll();">
+        <input type="number" id="commonEx" placeholder="예: 1380" oninput="calculateAll()">
     </div>
 
-    <div class="status-bar">
-        <span id="saveStatus" style="color: #059669;">저장완료</span>
-        <div style="display: flex; gap: 6px;">
-            <button class="btn-save" onclick="manualSave()" style="padding: 4px 10px; font-size: 12px;">저장하기</button>
-            <button class="btn-reset" onclick="resetCurrentMonth()" style="padding: 4px 8px; font-size: 12px;">현재월 초기화</button>
-        </div>
+    <!-- 상단 기능 버튼 모음 -->
+    <div class="action-bar">
+        <button class="btn-save" onclick="manualSave()">저장</button>
+        <button class="btn-backup" onclick="backupData()">백업(복사)</button>
+        <button class="btn-restore" onclick="restoreData()">복구(붙여넣기)</button>
+        <button style="background: #9333ea; color:#fff;" onclick="openChartModal()">그래프</button>
+        <button class="btn-reset" onclick="resetCurrentMonth()">전체 초기화</button>
     </div>
 
+    <!-- 시세 입력 테이블 -->
     <table>
         <thead>
             <tr>
-                <th style="width: 15%;">일자</th>
+                <th style="width: 18%;">일자</th>
                 <th style="width: 32%;">국제가</th>
                 <th style="width: 25%;">환율</th>
-                <th style="width: 28%;">1g원화</th>
+                <th style="width: 25%;">1g원화</th>
             </tr>
         </thead>
         <tbody id="tableBody"></tbody>
     </table>
 
+    <!-- 그래프 -->
     <div class="chart-container">
         <canvas id="goldChart"></canvas>
     </div>
@@ -162,9 +177,7 @@
     let db = {};
     try {
         const saved = localStorage.getItem('gold_diary_db');
-        if (saved) {
-            db = JSON.parse(saved);
-        }
+        if (saved) db = JSON.parse(saved);
     } catch (e) {
         db = {};
     }
@@ -189,11 +202,9 @@
             const keys = Object.keys(db).sort();
             currentMonth = keys[keys.length - 1];
         }
-        
         if (!db[currentMonth]) {
             db[currentMonth] = { exchange: '', days: {} };
         }
-
         renderMonthSelect();
         loadMonthData();
         initChart();
@@ -268,24 +279,24 @@
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><b>${d}일</b></td>
-                <td><input type="number" step="any" id="intl_${d}" value="${dayData.intl || ''}" placeholder="국제가 입력" oninput="autoSave(); calculateRow(${d})"></td>
-                <td><input type="number" step="any" id="ex_${d}" value="${dayData.ex || ''}" placeholder="환율 입력" oninput="autoSave(); calculateRow(${d})"></td>
-                <td class="krw-col" id="krw_${d}">-</td>
+                <td>
+                    <b>${d}일</b><br>
+                    <button class="btn-day-add" onclick="saveDay(${d})">+추가</button>
+                </td>
+                <td><input type="number" step="any" id="intl_${d}" value="${dayData.intl || ''}" placeholder="국제가"></td>
+                <td><input type="number" step="any" id="ex_${d}" value="${dayData.ex || ''}" placeholder="환율"></td>
+                <td class="krw-col" id="krw_${d}">${dayData.krw && dayData.krw !== '-' ? Number(dayData.krw).toLocaleString() : '-'}</td>
             `;
             tbody.appendChild(tr);
-            calculateRow(d, false);
         }
         updateChart();
     }
 
-    function calculateRow(d, save = true) {
+    function saveDay(d) {
         const intlInput = document.getElementById(`intl_${d}`);
         const commonExInput = document.getElementById('commonEx');
         const rowExInput = document.getElementById(`ex_${d}`);
         const krwCell = document.getElementById(`krw_${d}`);
-
-        if (!intlInput || !commonExInput || !rowExInput || !krwCell) return;
 
         const intlVal = parseFloat(intlInput.value);
         const commonExVal = parseFloat(commonExInput.value);
@@ -296,7 +307,6 @@
         }
 
         let krwValStr = '-';
-
         if (!isNaN(intlVal) && !isNaN(exVal)) {
             const calcKrw = (intlVal * exVal / 31.1035).toFixed(0);
             krwCell.textContent = Number(calcKrw).toLocaleString();
@@ -305,49 +315,75 @@
             krwCell.textContent = '-';
         }
 
-        if (save) {
-            if (!db[currentMonth]) db[currentMonth] = { exchange: '', days: {} };
-            if (!db[currentMonth].days) db[currentMonth].days = {};
-            
-            db[currentMonth].exchange = commonExInput.value;
-            db[currentMonth].days[d] = {
-                intl: intlInput.value,
-                ex: rowExInput.value,
-                krw: krwValStr
-            };
-            saveDB();
-            updateChart();
-        }
+        if (!db[currentMonth]) db[currentMonth] = { exchange: '', days: {} };
+        if (!db[currentMonth].days) db[currentMonth].days = {};
+
+        db[currentMonth].exchange = commonExInput.value;
+        db[currentMonth].days[d] = {
+            intl: intlInput.value,
+            ex: rowExInput.value,
+            krw: krwValStr
+        };
+        saveDB();
+        updateChart();
+        alert(`${d일} 데이터가 저장되었습니다.`);
     }
 
     function calculateAll() {
         const [year, month] = currentMonth.split('-').map(Number);
         const lastDay = new Date(year, month, 0).getDate();
         for (let d = 1; d <= lastDay; d++) {
-            calculateRow(d, true);
+            const intlInput = document.getElementById(`intl_${d}`);
+            const commonExInput = document.getElementById('commonEx');
+            const rowExInput = document.getElementById(`ex_${d}`);
+            const krwCell = document.getElementById(`krw_${d}`);
+            if (!intlInput) continue;
+
+            const intlVal = parseFloat(intlInput.value);
+            const commonExVal = parseFloat(commonExInput.value);
+            let exVal = parseFloat(rowExInput.value);
+            if (!exVal && !isNaN(commonExVal)) exVal = commonExVal;
+
+            if (!isNaN(intlVal) && !isNaN(exVal)) {
+                const calcKrw = (intlVal * exVal / 31.1035).toFixed(0);
+                krwCell.textContent = Number(calcKrw).toLocaleString();
+            }
         }
-    }
-
-    function autoSave() {
-        const status = document.getElementById('saveStatus');
-        if (!status) return;
-        status.textContent = '저장중...';
-        status.style.color = '#d97706';
-
-        setTimeout(() => {
-            status.textContent = '저장완료';
-            status.style.color = '#059669';
-        }, 300);
     }
 
     function manualSave() {
-        calculateAll();
-        const status = document.getElementById('saveStatus');
-        if (status) {
-            status.textContent = '저장완료!';
-            status.style.color = '#059669';
+        const [year, month] = currentMonth.split('-').map(Number);
+        const lastDay = new Date(year, month, 0).getDate();
+        for (let d = 1; d <= lastDay; d++) {
+            const intlInput = document.getElementById(`intl_${d}`);
+            if (intlInput && intlInput.value) {
+                saveDay(d);
+            }
         }
-        alert("현재 입력된 데이터가 안전하게 저장되었습니다.");
+        alert("현재 월 전체 데이터가 저장되었습니다.");
+    }
+
+    function backupData() {
+        const dataStr = JSON.stringify(db);
+        navigator.clipboard.writeText(dataStr).then(() => {
+            alert("전체 데이터가 클립보드에 백업(복사)되었습니다!");
+        }).catch(err => {
+            alert("백업 실패: " + err);
+        });
+    }
+
+    function restoreData() {
+        const dataStr = prompt("백업했던 텍스트를 붙여넣기 하세요:");
+        if (dataStr) {
+            try {
+                db = JSON.parse(dataStr);
+                saveDB();
+                init();
+                alert("데이터가 성공적으로 복구되었습니다!");
+            } catch (e) {
+                alert("잘못된 데이터 형식입니다.");
+            }
+        }
     }
 
     function saveDB() {
@@ -359,7 +395,7 @@
     }
 
     function resetCurrentMonth() {
-        if (confirm(`${currentMonth} 데이터를 초기화하시겠습니까?`)) {
+        if (confirm(`${currentMonth} 데이터를 모두 초기화하시겠습니까?`)) {
             db[currentMonth] = { exchange: '', days: {} };
             saveDB();
             loadMonthData();
@@ -376,6 +412,11 @@
             options: { responsive: true, maintainAspectRatio: false }
         });
         updateChart();
+    }
+
+    function openChartModal() {
+        updateChart();
+        alert("그래프가 최신 데이터로 업데이트되었습니다.");
     }
 
     function updateChart() {
