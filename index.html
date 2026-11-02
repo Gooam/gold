@@ -100,7 +100,7 @@
             background: #fff;
             padding: 4px 8px;
         }
-        /* 가로 스크롤 가능한 슬림한 테이블 */
+        /* 가로 스크롤 가능한 아담한 테이블 */
         .table-wrapper {
             width: 100%;
             overflow-x: auto;
@@ -131,7 +131,7 @@
             background: #fff;
             font-size: 12px;
         }
-        /* 일자와 추가 버튼을 가로로 나란히 배치하여 세로 압축 */
+        /* 일자와 추가 버튼을 가로로 나란히 배치 */
         .date-cell-container {
             display: flex;
             align-items: center;
@@ -242,7 +242,7 @@
 <script>
     let db = {};
     try {
-        const saved = localStorage.getItem('kitco_gold_perfect_v2_db');
+        const saved = localStorage.getItem('kitco_gold_master_v3_db');
         if (saved) db = JSON.parse(saved);
     } catch (e) {
         db = {};
@@ -361,7 +361,6 @@
                     `;
                 }
 
-                // 우측 끝 자료금 입력 칸 옆에 개별 줄 삭제 버튼 배치 (첫 번째 줄은 삭제 불가, 2번째 줄부터 삭제 가능)
                 let delButtonHtml = '';
                 if (rows.length > 1) {
                     delButtonHtml = `<button class="btn-row-del" onclick="removeRow(${d}, ${rowIndex})">삭제</button>`;
@@ -526,7 +525,7 @@
 
     function saveDB() {
         try {
-            localStorage.setItem('kitco_gold_perfect_v2_db', JSON.stringify(db));
+            localStorage.setItem('kitco_gold_perfect_v3_db', JSON.stringify(db));
         } catch (e) {
             console.error(e);
         }
