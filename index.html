@@ -22,7 +22,7 @@
             font-size: 13px;
         }
         .container {
-            max-width: 750px;
+            max-width: 900px;
             margin: 0 auto;
             background: #ffffff;
             padding: 10px;
@@ -66,7 +66,7 @@
             margin-bottom: 10px;
         }
         .action-bar button {
-            padding: 6px 2px;
+            padding: 8px 2px;
             font-size: 11px;
             text-align: center;
             font-weight: bold;
@@ -107,7 +107,7 @@
             border: 1px solid var(--border-color);
             padding: 4px 2px;
             text-align: center;
-            font-size: 12px;
+            font-size: 11px;
         }
         th {
             background: #e2e8f0;
@@ -119,7 +119,7 @@
             border: 1px solid #cbd5e1;
             border-radius: 4px;
             background: #fff;
-            font-size: 12px;
+            font-size: 11px;
         }
         .btn-day-add {
             background: #059669;
@@ -127,7 +127,7 @@
             border: none;
             padding: 3px 6px;
             border-radius: 4px;
-            font-size: 11px;
+            font-size: 10px;
             cursor: pointer;
             margin-top: 2px;
             font-weight: bold;
@@ -138,6 +138,12 @@
             padding-right: 4px;
             font-weight: bold;
             color: #dc2626;
+        }
+        .don-col {
+            text-align: right;
+            padding-right: 4px;
+            font-weight: bold;
+            color: #059669;
         }
         .diff-col {
             text-align: right;
@@ -165,30 +171,31 @@
 
     <!-- 공통 환율 -->
     <div class="exchange-box">
-        <label for="commonEx">공통 환율:</label>
+        <label for="commonEx">공통 적용 환율:</label>
         <input type="number" id="commonEx" placeholder="예: 1380" oninput="calculateAll()">
     </div>
 
-    <!-- 상단 기능 버튼 모음 -->
+    <!-- 원본 색상 버튼 모음 -->
     <div class="action-bar">
         <button class="btn-save" onclick="manualSave()">저장</button>
-        <button class="btn-backup" onclick="backupData()">백업</button>
-        <button class="btn-restore" onclick="restoreData()">복구</button>
+        <button class="btn-backup" onclick="backupData()">백업(복사)</button>
+        <button class="btn-restore" onclick="restoreData()">복구(붙여넣기)</button>
         <button class="btn-chart" onclick="openChartModal()">그래프</button>
-        <button class="btn-reset" onclick="resetCurrentMonth()">초기화</button>
+        <button class="btn-reset" onclick="resetCurrentMonth()">전체 초기화</button>
     </div>
 
-    <!-- 전체 테이블 -->
+    <!-- 완벽하게 정돈된 테이블 -->
     <table>
         <thead>
             <tr>
-                <th style="width: 15%;">일자</th>
-                <th style="width: 18%;">국제가</th>
-                <th style="width: 15%;">환율</th>
-                <th style="width: 15%;">1g원화</th>
-                <th style="width: 14%;">종로시세</th>
+                <th style="width: 10%;">일자</th>
+                <th style="width: 15%;">국제가</th>
+                <th style="width: 13%;">환율</th>
+                <th style="width: 13%;">1g원화</th>
+                <th style="width: 13%;">국제가(돈)</th>
+                <th style="width: 13%;">종로시세</th>
                 <th style="width: 12%;">차액</th>
-                <th style="width: 11%;">자뢔금</th>
+                <th style="width: 11%;">자료금</th>
             </tr>
         </thead>
         <tbody id="tableBody"></tbody>
@@ -203,7 +210,7 @@
 <script>
     let db = {};
     try {
-        const saved = localStorage.getItem('kitco_gold_dynamic_db');
+        const saved = localStorage.getItem('kitco_gold_master_db');
         if (saved) db = JSON.parse(saved);
     } catch (e) {
         db = {};
@@ -302,9 +309,8 @@
 
         for (let d = 1; d <= lastDay; d++) {
             const dayKey = String(d);
-            // 각 날짜별로 여러 줄(array)을 지원하도록 구조 변경
             if (!monthData.days[dayKey]) {
-                monthData.days[dayKey] = [{ intl: '', ex: '', krw: '-', jongro: '', diff: '-', jara: '' }];
+                monthData.days[dayKey] = [{ intl: '', ex: '', krw: '-', don: '-', jongro: '', diff: '-', zaryogeum: '' }];
             }
             const rows = monthData.days[dayKey];
 
@@ -326,9 +332,10 @@
                     <td><input type="number" step="any" id="intl_${d}_${rowIndex}" value="${row.intl || ''}" placeholder="국제가" oninput="calculateRow(${d}, ${rowIndex})"></td>
                     <td><input type="number" step="any" id="ex_${d}_${rowIndex}" value="${row.ex || ''}" placeholder="환율" oninput="calculateRow(${d}, ${rowIndex})"></td>
                     <td class="krw-col" id="krw_${d}_${rowIndex}">${row.krw && row.krw !== '-' ? Number(row.krw).toLocaleString() : '-'}</td>
+                    <td class="don-col" id="don_${d}_${rowIndex}">${row.don && row.don !== '-' ? Number(row.don).toLocaleString() : '-'}</td>
                     <td><input type="number" step="any" id="jongro_${d}_${rowIndex}" value="${row.jongro || ''}" placeholder="종로" oninput="calculateRow(${d}, ${rowIndex})"></td>
                     <td class="diff-col" id="diff_${d}_${rowIndex}">${row.diff || '-'}</td>
-                    <td><input type="number" step="any" id="jara_${d}_${rowIndex}" value="${row.jara || ''}" placeholder="자뢔금" oninput="saveCurrentState()"></td>
+                    <td><input type="number" step="any" id="zaryogeum_${d}_${rowIndex}" value="${row.zaryogeum || ''}" placeholder="자료금" oninput="saveCurrentState()"></td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -341,7 +348,7 @@
         if (!db[currentMonth].days[d]) {
             db[currentMonth].days[d] = [];
         }
-        db[currentMonth].days[d].push({ intl: '', ex: '', krw: '-', jongro: '', diff: '-', jara: '' });
+        db[currentMonth].days[d].push({ intl: '', ex: '', krw: '-', don: '-', jongro: '', diff: '-', zaryogeum: '' });
         saveDB();
         loadMonthData();
     }
@@ -351,6 +358,7 @@
         const commonExInput = document.getElementById('commonEx');
         const rowExInput = document.getElementById(`ex_${d}_${rowIndex}`);
         const krwCell = document.getElementById(`krw_${d}_${rowIndex}`);
+        const donCell = document.getElementById(`don_${d}_${rowIndex}`);
         const jongroInput = document.getElementById(`jongro_${d}_${rowIndex}`);
         const diffCell = document.getElementById(`diff_${d}_${rowIndex}`);
 
@@ -362,16 +370,21 @@
         if (!exVal && !isNaN(commonExVal)) exVal = commonExVal;
 
         let calcKrwNum = 0;
+        let calcDonNum = 0;
         if (!isNaN(intlVal) && !isNaN(exVal)) {
             calcKrwNum = intlVal * exVal / 31.1035;
+            calcDonNum = calcKrwNum * 3.75;
+            
             krwCell.textContent = Math.round(calcKrwNum).toLocaleString();
+            donCell.textContent = Math.round(calcDonNum).toLocaleString();
         } else {
             krwCell.textContent = '-';
+            donCell.textContent = '-';
         }
 
         const jongroVal = parseFloat(jongroInput.value);
-        if (!isNaN(calcKrwNum) && !isNaN(jongroVal) && calcKrwNum > 0) {
-            const diffVal = jongroVal - Math.round(calcKrwNum);
+        if (!isNaN(calcDonNum) && !isNaN(jongroVal) && calcDonNum > 0) {
+            const diffVal = jongroVal - Math.round(calcDonNum);
             diffCell.textContent = diffVal.toLocaleString();
             diffCell.style.color = diffVal >= 0 ? '#2563eb' : '#dc2626';
         } else {
@@ -396,17 +409,19 @@
                 const intlInput = document.getElementById(`intl_${d}_${rowIndex}`);
                 const rowExInput = document.getElementById(`ex_${d}_${rowIndex}`);
                 const krwCell = document.getElementById(`krw_${d}_${rowIndex}`);
+                const donCell = document.getElementById(`don_${d}_${rowIndex}`);
                 const jongroInput = document.getElementById(`jongro_${d}_${rowIndex}`);
                 const diffCell = document.getElementById(`diff_${d}_${rowIndex}`);
-                const jaraInput = document.getElementById(`jara_${d}_${rowIndex}`);
+                const zaryogeumInput = document.getElementById(`zaryogeum_${d}_${rowIndex}`);
 
                 if (intlInput) {
                     row.intl = intlInput.value;
                     row.ex = rowExInput.value;
                     row.krw = krwCell.textContent !== '-' ? krwCell.textContent.replace(/,/g, '') : '-';
+                    row.don = donCell.textContent !== '-' ? donCell.textContent.replace(/,/g, '') : '-';
                     row.jongro = jongroInput.value;
                     row.diff = diffCell.textContent;
-                    row.jara = jaraInput ? jaraInput.value : '';
+                    row.zaryogeum = zaryogeumInput ? zaryogeumInput.value : '';
                 }
             });
         }
@@ -457,7 +472,7 @@
 
     function saveDB() {
         try {
-            localStorage.setItem('kitco_gold_dynamic_db', JSON.stringify(db));
+            localStorage.setItem('kitco_gold_master_db', JSON.stringify(db));
         } catch (e) {
             console.error(e);
         }
@@ -477,7 +492,7 @@
         const ctx = canvas.getContext('2d');
         chartInstance = new Chart(ctx, {
             type: 'line',
-            data: { labels: [], datasets: [{ label: '1g 원화 시세', data: [], borderColor: '#2563eb', tension: 0.1 }] },
+            data: { labels: [], datasets: [{ label: '국제가(돈) 시세', data: [], borderColor: '#2563eb', tension: 0.1 }] },
             options: { responsive: true, maintainAspectRatio: false }
         });
         updateChart();
@@ -503,9 +518,9 @@
             if (rows && rows.length > 0) {
                 rows.forEach((row, idx) => {
                     labels.push(`${d}일(${idx+1})`);
-                    if (row.krw && row.krw !== '-') {
-                        const cleanKrw = Number(String(row.krw).replace(/,/g, ''));
-                        if (!isNaN(cleanKrw)) data.push(cleanKrw);
+                    if (row.don && row.don !== '-') {
+                        const cleanDon = Number(String(row.don).replace(/,/g, ''));
+                        if (!isNaN(cleanDon)) data.push(cleanDon);
                         else data.push(null);
                     } else {
                         data.push(null);
