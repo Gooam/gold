@@ -39,6 +39,9 @@
             gap: 8px;
             margin-bottom: 15px;
             align-items: center;
+            background: #1e293b;
+            padding: 10px;
+            border-radius: 8px;
         }
         select, button, input {
             font-family: var(--font-family);
@@ -55,10 +58,6 @@
         }
         .btn-add-month { background: #2563eb; color: #fff; border: none; font-weight: bold; cursor: pointer; white-space: nowrap; }
         .btn-del { background: #dc2626; color: #fff; border: none; font-weight: bold; cursor: pointer; white-space: nowrap; }
-        .btn-save { background: #2563eb; color: #fff; border: none; font-weight: bold; cursor: pointer; }
-        .btn-backup { background: #059669; color: #fff; border: none; font-weight: bold; cursor: pointer; }
-        .btn-restore { background: #7c3aed; color: #fff; border: none; font-weight: bold; cursor: pointer; }
-        .btn-reset { background: #dc2626; color: #fff; border: none; font-weight: bold; cursor: pointer; }
         
         .action-bar {
             display: grid;
@@ -70,9 +69,23 @@
             padding: 8px 2px;
             font-size: 11px;
             text-align: center;
+            font-weight: bold;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
         }
+        .btn-save { background: #2563eb; }
+        .btn-backup { background: #059669; }
+        .btn-restore { background: #7c3aed; }
+        .btn-chart { background: #9333ea; }
+        .btn-reset { background: #dc2626; }
+
         .exchange-box {
             margin-bottom: 15px;
+            background: #f1f5f9;
+            padding: 10px;
+            border-radius: 8px;
         }
         .exchange-box label {
             display: block;
@@ -81,6 +94,7 @@
         }
         .exchange-box input {
             width: 100%;
+            background: #fff;
         }
         table {
             width: 100%;
@@ -108,11 +122,12 @@
             background: #059669;
             color: white;
             border: none;
-            padding: 2px 6px;
+            padding: 3px 8px;
             border-radius: 4px;
             font-size: 11px;
             cursor: pointer;
             margin-top: 2px;
+            font-weight: bold;
         }
         .krw-col {
             text-align: right;
@@ -149,8 +164,8 @@
     <div class="action-bar">
         <button class="btn-save" onclick="manualSave()">저장</button>
         <button class="btn-backup" onclick="backupData()">백업(복사)</button>
-        <button class="btn-restore" onclick="restoreData()">복구(붙여넣기)</button>
-        <button style="background: #9333ea; color:#fff;" onclick="openChartModal()">그래프</button>
+        <button class="btn-restore" onclick="restoreData()">복구</button>
+        <button class="btn-chart" onclick="openChartModal()">그래프</button>
         <button class="btn-reset" onclick="resetCurrentMonth()">전체 초기화</button>
     </div>
 
@@ -176,7 +191,7 @@
 <script>
     let db = {};
     try {
-        const saved = localStorage.getItem('gold_diary_db');
+        const saved = localStorage.getItem('kitco_gold_db');
         if (saved) db = JSON.parse(saved);
     } catch (e) {
         db = {};
@@ -326,7 +341,7 @@
         };
         saveDB();
         updateChart();
-        alert(`${d일} 데이터가 저장되었습니다.`);
+        alert(`${d}일 데이터가 저장되었습니다.`);
     }
 
     function calculateAll() {
@@ -388,7 +403,7 @@
 
     function saveDB() {
         try {
-            localStorage.setItem('gold_diary_db', JSON.stringify(db));
+            localStorage.setItem('kitco_gold_db', JSON.stringify(db));
         } catch (e) {
             console.error(e);
         }
