@@ -100,7 +100,7 @@
             background: #fff;
             padding: 4px 8px;
         }
-        /* 우측 사진의 아담한 비율을 완벽히 재현한 가로 스크롤 테이블 */
+        /* 옛날 원본처럼 아담하고 깔끔한 가로 스크롤 테이블 */
         .table-wrapper {
             width: 100%;
             overflow-x: auto;
@@ -108,7 +108,7 @@
             margin-bottom: 8px;
         }
         table {
-            width: 820px; /* 우측 사진의 예쁜 비율에 딱 맞춘 최적화된 폭 */
+            width: 820px;
             border-collapse: collapse;
         }
         th, td {
@@ -181,8 +181,12 @@
         }
         .chart-container {
             position: relative;
-            height: 220px;
+            height: 250px;
             margin-top: 10px;
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 5px;
         }
     </style>
 </head>
@@ -232,7 +236,7 @@
         </table>
     </div>
 
-    <!-- 그래프 -->
+    <!-- 그래프 영역 -->
     <div class="chart-container">
         <canvas id="goldChart"></canvas>
     </div>
@@ -241,7 +245,7 @@
 <script>
     let db = {};
     try {
-        const saved = localStorage.getItem('kitco_gold_ideal_db');
+        const saved = localStorage.getItem('kitco_gold_fixed_db');
         if (saved) db = JSON.parse(saved);
     } catch (e) {
         db = {};
@@ -524,7 +528,7 @@
 
     function saveDB() {
         try {
-            localStorage.setItem('kitco_gold_ideal_db', JSON.stringify(db));
+            localStorage.setItem('kitco_gold_fixed_db', JSON.stringify(db));
         } catch (e) {
             console.error(e);
         }
