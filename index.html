@@ -100,7 +100,7 @@
             background: #fff;
             padding: 4px 8px;
         }
-        /* 원본의 아담한 비율을 살리면서 우측 드래그가 가능한 가로 스크롤 테이블 */
+        /* 가로 스크롤 가능한 슬림한 테이블 */
         .table-wrapper {
             width: 100%;
             overflow-x: auto;
@@ -108,7 +108,7 @@
             margin-bottom: 8px;
         }
         table {
-            width: 950px;
+            width: 1020px;
             border-collapse: collapse;
         }
         th, td {
@@ -131,17 +131,34 @@
             background: #fff;
             font-size: 12px;
         }
+        /* 일자와 추가 버튼을 가로로 나란히 배치하여 세로 압축 */
+        .date-cell-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
         .btn-day-add {
             background: #059669;
             color: white;
             border: none;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 11px;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 10px;
             cursor: pointer;
-            margin-top: 2px;
             font-weight: bold;
-            white-space: nowrap;
+        }
+        .btn-row-del {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-left: 3px;
         }
         .krw-col {
             text-align: right;
@@ -202,14 +219,14 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width: 75px;">일자</th>
+                    <th style="width: 100px;">일자</th>
                     <th style="width: 120px;">국제가</th>
                     <th style="width: 100px;">환율</th>
                     <th style="width: 130px;">1g원화</th>
                     <th style="width: 130px;">국제가(돈)</th>
                     <th style="width: 120px;">종로시세</th>
                     <th style="width: 110px;">차액</th>
-                    <th style="width: 120px;">자료금</th>
+                    <th style="width: 150px;">자료금 / 삭제</th>
                 </tr>
             </thead>
             <tbody id="tableBody"></tbody>
@@ -225,7 +242,7 @@
 <script>
     let db = {};
     try {
-        const saved = localStorage.getItem('kitco_gold_master_final_db');
+        const saved = localStorage.getItem('kitco_gold_perfect_v2_db');
         if (saved) db = JSON.parse(saved);
     } catch (e) {
         db = {};
@@ -324,7 +341,7 @@
 
         for (let d = 1; d <= lastDay; d++) {
             const dayKey = String(d);
-            if (!monthData.days[dayKey]) {
+            if (!monthData.days[dayKey] || monthData.days[dayKey].length === 0) {
                 monthData.days[dayKey] = [{ intl: '', ex: '', krw: '-', don: '-', jongro: '', diff: '-', zaryogeum: '' }];
             }
             const rows = monthData.days[dayKey];
@@ -336,10 +353,18 @@
                 if (rowIndex === 0) {
                     dayCellHtml = `
                         <td rowspan="${rows.length}" style="vertical-align: middle; background: #f8fafc;">
-                            <b>${d}일</b><br>
-                            <button class="btn-day-add" onclick="addRow(${d})">+추가</button>
+                            <div class="date-cell-container">
+                                <b>${d}일</b>
+                                <button class="btn-day-add" onclick="addRow(${d})">+추가</button>
+                            </div>
                         </td>
                     `;
+                }
+
+                // 우측 끝 자료금 입력 칸 옆에 개별 줄 삭제 버튼 배치 (첫 번째 줄은 삭제 불가, 2번째 줄부터 삭제 가능)
+                let delButtonHtml = '';
+                if (rows.length > 1) {
+                    delButtonHtml = `<button class="btn-row-del" onclick="removeRow(${d}, ${rowIndex})">삭제</button>`;
                 }
 
                 tr.innerHTML = `
@@ -350,7 +375,12 @@
                     <td class="don-col" id="don_${d}_${rowIndex}">${row.don && row.don !== '-' ? Number(row.don).toLocaleString() : '-'}</td>
                     <td><input type="number" step="any" id="jongro_${d}_${rowIndex}" value="${row.jongro || ''}" placeholder="종로" oninput="calculateRow(${d}, ${rowIndex})"></td>
                     <td class="diff-col" id="diff_${d}_${rowIndex}">${row.diff || '-'}</td>
-                    <td><input type="number" step="any" id="zaryogeum_${d}_${rowIndex}" value="${row.zaryogeum || ''}" placeholder="자료금" oninput="saveCurrentState()"></td>
+                    <td>
+                        <div style="display: flex; align-items: center;">
+                            <input type="number" step="any" id="zaryogeum_${d}_${rowIndex}" value="${row.zaryogeum || ''}" placeholder="자료금" oninput="saveCurrentState()" style="flex: 1;">
+                            ${delButtonHtml}
+                        </div>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -366,6 +396,15 @@
         db[currentMonth].days[d].push({ intl: '', ex: '', krw: '-', don: '-', jongro: '', diff: '-', zaryogeum: '' });
         saveDB();
         loadMonthData();
+    }
+
+    function removeRow(d, rowIndex) {
+        saveCurrentState();
+        if (db[currentMonth].days[d] && db[currentMonth].days[d].length > 1) {
+            db[currentMonth].days[d].splice(rowIndex, 1);
+            saveDB();
+            loadMonthData();
+        }
     }
 
     function calculateRow(d, rowIndex) {
@@ -487,7 +526,7 @@
 
     function saveDB() {
         try {
-            localStorage.setItem('kitco_gold_master_final_db', JSON.stringify(db));
+            localStorage.setItem('kitco_gold_perfect_v2_db', JSON.stringify(db));
         } catch (e) {
             console.error(e);
         }
