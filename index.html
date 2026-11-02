@@ -158,7 +158,6 @@
 </div>
 
 <script>
-    // 데이터베이스 로드 안전장치
     let db = {};
     try {
         const saved = localStorage.getItem('gold_diary_db');
@@ -190,7 +189,6 @@
             currentMonth = keys[keys.length - 1];
         }
         
-        // 현재 월이 없으면 강제로 생성
         if (!db[currentMonth]) {
             db[currentMonth] = { exchange: '', days: {} };
         }
