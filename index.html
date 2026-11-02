@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>킷코 금시세 실시간 일지</title>
+    <!-- Chart.js 최신 안정 버전 -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -100,7 +101,7 @@
             background: #fff;
             padding: 4px 8px;
         }
-        /* 옛날 원본처럼 아담하고 깔끔한 가로 스크롤 테이블 */
+        /* 마스타가 그어주신 빨간 선 비율에 딱 맞춘 슬림한 가로 스크롤 테이블 */
         .table-wrapper {
             width: 100%;
             overflow-x: auto;
@@ -108,24 +109,24 @@
             margin-bottom: 8px;
         }
         table {
-            width: 820px;
+            width: 740px; /* 빨간 선 간격에 맞추어 컴팩트하게 압축된 폭 */
             border-collapse: collapse;
         }
         th, td {
             border: 1px solid var(--border-color);
-            padding: 4px;
+            padding: 3px;
             text-align: center;
             font-size: 12px;
         }
         th {
             background: #e2e8f0;
             white-space: nowrap;
-            padding: 5px 2px;
+            padding: 4px 2px;
         }
         td input {
             width: 100%;
             text-align: right;
-            padding: 4px;
+            padding: 3px 4px;
             border: 1px solid #cbd5e1;
             border-radius: 4px;
             background: #fff;
@@ -135,14 +136,14 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 4px;
+            gap: 3px;
             white-space: nowrap;
         }
         .btn-day-add {
             background: #059669;
             color: white;
             border: none;
-            padding: 2px 5px;
+            padding: 2px 4px;
             border-radius: 3px;
             font-size: 10px;
             cursor: pointer;
@@ -152,12 +153,12 @@
             background: #dc2626;
             color: white;
             border: none;
-            padding: 2px 5px;
+            padding: 2px 4px;
             border-radius: 3px;
             font-size: 10px;
             cursor: pointer;
             font-weight: bold;
-            margin-left: 3px;
+            margin-left: 2px;
         }
         .krw-col {
             text-align: right;
@@ -165,6 +166,7 @@
             font-weight: bold;
             color: #dc2626;
             white-space: nowrap;
+            font-size: 11px;
         }
         .don-col {
             text-align: right;
@@ -172,12 +174,14 @@
             font-weight: bold;
             color: #059669;
             white-space: nowrap;
+            font-size: 11px;
         }
         .diff-col {
             text-align: right;
             padding-right: 4px;
             font-weight: bold;
             white-space: nowrap;
+            font-size: 11px;
         }
         .chart-container {
             position: relative;
@@ -217,19 +221,19 @@
         <button class="btn-reset" onclick="resetCurrentMonth()">전체 초기화</button>
     </div>
 
-    <!-- 테이블 박스 -->
+    <!-- 빨간 선 비율에 맞춘 콤팩트 테이블 박스 -->
     <div class="table-wrapper">
         <table>
             <thead>
                 <tr>
-                    <th style="width: 75px;">일자</th>
-                    <th style="width: 105px;">국제가</th>
-                    <th style="width: 90px;">환율</th>
-                    <th style="width: 110px;">1g원화</th>
-                    <th style="width: 110px;">국제가(돈)</th>
-                    <th style="width: 105px;">종로시세</th>
-                    <th style="width: 95px;">차액</th>
-                    <th style="width: 130px;">자료금 / 삭제</th>
+                    <th style="width: 65px;">일자</th>
+                    <th style="width: 90px;">국제가</th>
+                    <th style="width: 75px;">환율</th>
+                    <th style="width: 95px;">1g원화</th>
+                    <th style="width: 95px;">국제가(돈)</th>
+                    <th style="width: 90px;">종로시세</th>
+                    <th style="width: 80px;">차액</th>
+                    <th style="width: 110px;">자료금/삭제</th>
                 </tr>
             </thead>
             <tbody id="tableBody"></tbody>
@@ -245,7 +249,7 @@
 <script>
     let db = {};
     try {
-        const saved = localStorage.getItem('kitco_gold_fixed_db');
+        const saved = localStorage.getItem('kitco_gold_redline_db');
         if (saved) db = JSON.parse(saved);
     } catch (e) {
         db = {};
@@ -528,7 +532,7 @@
 
     function saveDB() {
         try {
-            localStorage.setItem('kitco_gold_fixed_db', JSON.stringify(db));
+            localStorage.setItem('kitco_gold_redline_db', JSON.stringify(db));
         } catch (e) {
             console.error(e);
         }
@@ -546,10 +550,34 @@
         const canvas = document.getElementById('goldChart');
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
+        
+        if (chartInstance) {
+            chartInstance.destroy();
+        }
+
         chartInstance = new Chart(ctx, {
             type: 'line',
-            data: { labels: [], datasets: [{ label: '국제가(돈) 시세', data: [], borderColor: '#2563eb', tension: 0.1 }] },
-            options: { responsive: true, maintainAspectRatio: false }
+            data: {
+                labels: [],
+                datasets: [{
+                    label: '국제가(돈) 시세',
+                    data: [],
+                    borderColor: '#2563eb',
+                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.1,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: false
+                    }
+                }
+            }
         });
         updateChart();
     }
