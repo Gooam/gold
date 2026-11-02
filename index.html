@@ -96,13 +96,14 @@
         td input {
             width: 100%;
             text-align: right;
-            padding: 4px;
-            border: 1px solid transparent;
-            background: transparent;
+            padding: 6px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            background: #fff;
         }
         td input:focus {
             border-color: var(--primary-color);
-            background: #fff;
+            outline: none;
         }
         .krw-col {
             text-align: right;
@@ -268,8 +269,8 @@
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td><b>${d}일</b></td>
-                <td><input type="number" step="any" id="intl_${d}" value="${dayData.intl || ''}" placeholder="국제가" oninput="autoSave(); calculateRow(${d})"></td>
-                <td><input type="number" step="any" id="ex_${d}" value="${dayData.ex || ''}" placeholder="환율" oninput="autoSave(); calculateRow(${d})"></td>
+                <td><input type="number" step="any" id="intl_${d}" value="${dayData.intl || ''}" placeholder="국제가 입력" oninput="autoSave(); calculateRow(${d})"></td>
+                <td><input type="number" step="any" id="ex_${d}" value="${dayData.ex || ''}" placeholder="환율 입력" oninput="autoSave(); calculateRow(${d})"></td>
                 <td class="krw-col" id="krw_${d}">-</td>
             `;
             tbody.appendChild(tr);
