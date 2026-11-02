@@ -18,35 +18,35 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
-            padding: 10px;
-            font-size: 14px;
+            padding: 5px;
+            font-size: 13px;
         }
         .container {
-            max-width: 600px;
+            max-width: 700px;
             margin: 0 auto;
             background: #ffffff;
-            padding: 15px;
+            padding: 10px;
             border-radius: 12px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
         h2 {
             text-align: center;
-            font-size: 1.2rem;
-            margin-bottom: 15px;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
         }
         .top-controls {
             display: flex;
-            gap: 8px;
-            margin-bottom: 15px;
+            gap: 6px;
+            margin-bottom: 10px;
             align-items: center;
             background: #1e293b;
-            padding: 10px;
+            padding: 8px;
             border-radius: 8px;
         }
         select, button, input {
             font-family: var(--font-family);
-            font-size: 14px;
-            padding: 8px 12px;
+            font-size: 13px;
+            padding: 6px 10px;
             border-radius: 6px;
             border: 1px solid var(--border-color);
             box-sizing: border-box;
@@ -63,10 +63,10 @@
             display: grid;
             grid-template-columns: repeat(5, 1fr);
             gap: 4px;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
         .action-bar button {
-            padding: 8px 2px;
+            padding: 6px 2px;
             font-size: 11px;
             text-align: center;
             font-weight: bold;
@@ -82,63 +82,71 @@
         .btn-reset { background: #dc2626; }
 
         .exchange-box {
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             background: #f1f5f9;
-            padding: 10px;
+            padding: 8px;
             border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         .exchange-box label {
-            display: block;
-            margin-bottom: 4px;
             font-weight: bold;
+            white-space: nowrap;
         }
         .exchange-box input {
-            width: 100%;
+            flex: 1;
             background: #fff;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
         th, td {
             border: 1px solid var(--border-color);
-            padding: 6px 4px;
+            padding: 4px 2px;
             text-align: center;
+            font-size: 12px;
         }
         th {
             background: #e2e8f0;
-            font-size: 13px;
         }
         td input {
             width: 100%;
             text-align: right;
-            padding: 6px;
+            padding: 4px;
             border: 1px solid #cbd5e1;
             border-radius: 4px;
             background: #fff;
+            font-size: 12px;
         }
         .btn-day-add {
             background: #059669;
             color: white;
             border: none;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 11px;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-size: 10px;
             cursor: pointer;
             margin-top: 2px;
             font-weight: bold;
         }
         .krw-col {
             text-align: right;
-            padding-right: 8px;
+            padding-right: 4px;
             font-weight: bold;
             color: #dc2626;
         }
+        .diff-col {
+            text-align: right;
+            padding-right: 4px;
+            font-weight: bold;
+        }
         .chart-container {
             position: relative;
-            height: 250px;
-            margin-top: 20px;
+            height: 220px;
+            margin-top: 15px;
         }
     </style>
 </head>
@@ -147,7 +155,7 @@
 <div class="container">
     <h2>킷코 금시세 실시간 일지</h2>
 
-    <!-- 월 컨트롤 영역 -->
+    <!-- 상단 월 선택 및 새 월 추가 -->
     <div class="top-controls">
         <select id="monthSelect" onchange="changeMonth()"></select>
         <button class="btn-add-month" onclick="addNewMonth()">+ 새 월 추가</button>
@@ -156,27 +164,30 @@
 
     <!-- 공통 환율 -->
     <div class="exchange-box">
-        <label for="commonEx">공통 적용 환율:</label>
+        <label for="commonEx">공통 환율:</label>
         <input type="number" id="commonEx" placeholder="예: 1380" oninput="calculateAll()">
     </div>
 
     <!-- 상단 기능 버튼 모음 -->
     <div class="action-bar">
         <button class="btn-save" onclick="manualSave()">저장</button>
-        <button class="btn-backup" onclick="backupData()">백업(복사)</button>
+        <button class="btn-backup" onclick="backupData()">백업</button>
         <button class="btn-restore" onclick="restoreData()">복구</button>
         <button class="btn-chart" onclick="openChartModal()">그래프</button>
-        <button class="btn-reset" onclick="resetCurrentMonth()">전체 초기화</button>
+        <button class="btn-reset" onclick="resetCurrentMonth()">초기화</button>
     </div>
 
-    <!-- 시세 입력 테이블 -->
+    <!-- 전체 테이블 -->
     <table>
         <thead>
             <tr>
-                <th style="width: 18%;">일자</th>
-                <th style="width: 32%;">국제가</th>
-                <th style="width: 25%;">환율</th>
-                <th style="width: 25%;">1g원화</th>
+                <th style="width: 12%;">일자</th>
+                <th style="width: 17%;">국제가</th>
+                <th style="width: 15%;">환율</th>
+                <th style="width: 15%;">1g원화</th>
+                <th style="width: 15%;">종로시세</th>
+                <th style="width: 13%;">차액</th>
+                <th style="width: 13%;">자뢔금</th>
             </tr>
         </thead>
         <tbody id="tableBody"></tbody>
@@ -191,7 +202,7 @@
 <script>
     let db = {};
     try {
-        const saved = localStorage.getItem('kitco_gold_db');
+        const saved = localStorage.getItem('kitco_gold_perfect_db');
         if (saved) db = JSON.parse(saved);
     } catch (e) {
         db = {};
@@ -290,79 +301,88 @@
 
         for (let d = 1; d <= lastDay; d++) {
             const dayKey = String(d);
-            const dayData = (monthData.days && monthData.days[dayKey]) ? monthData.days[dayKey] : { intl: '', ex: '', krw: '' };
+            const dayData = (monthData.days && monthData.days[dayKey]) ? monthData.days[dayKey] : { intl: '', ex: '', krw: '', jongro: '', diff: '', jara: '' };
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>
                     <b>${d}일</b><br>
-                    <button class="btn-day-add" onclick="saveDay(${d})">+추가</button>
+                    <button class="btn-day-add" onclick="saveDay(${d})">저장</button>
                 </td>
-                <td><input type="number" step="any" id="intl_${d}" value="${dayData.intl || ''}" placeholder="국제가"></td>
-                <td><input type="number" step="any" id="ex_${d}" value="${dayData.ex || ''}" placeholder="환율"></td>
+                <td><input type="number" step="any" id="intl_${d}" value="${dayData.intl || ''}" placeholder="국제가" oninput="calculateRow(${d})"></td>
+                <td><input type="number" step="any" id="ex_${d}" value="${dayData.ex || ''}" placeholder="환율" oninput="calculateRow(${d})"></td>
                 <td class="krw-col" id="krw_${d}">${dayData.krw && dayData.krw !== '-' ? Number(dayData.krw).toLocaleString() : '-'}</td>
+                <td><input type="number" step="any" id="jongro_${d}" value="${dayData.jongro || ''}" placeholder="종로" oninput="calculateRow(${d})"></td>
+                <td class="diff-col" id="diff_${d}">${dayData.diff || '-'}</td>
+                <td><input type="number" step="any" id="jara_${d}" value="${dayData.jara || ''}" placeholder="자뢔금"></td>
             `;
             tbody.appendChild(tr);
         }
         updateChart();
     }
 
-    function saveDay(d) {
+    function calculateRow(d) {
         const intlInput = document.getElementById(`intl_${d}`);
         const commonExInput = document.getElementById('commonEx');
         const rowExInput = document.getElementById(`ex_${d}`);
         const krwCell = document.getElementById(`krw_${d}`);
+        const jongroInput = document.getElementById(`jongro_${d}`);
+        const diffCell = document.getElementById(`diff_${d}`);
 
         const intlVal = parseFloat(intlInput.value);
         const commonExVal = parseFloat(commonExInput.value);
         let exVal = parseFloat(rowExInput.value);
+        if (!exVal && !isNaN(commonExVal)) exVal = commonExVal;
 
-        if (!exVal && !isNaN(commonExVal)) {
-            exVal = commonExVal;
-        }
-
-        let krwValStr = '-';
+        let calcKrwNum = 0;
         if (!isNaN(intlVal) && !isNaN(exVal)) {
-            const calcKrw = (intlVal * exVal / 31.1035).toFixed(0);
-            krwCell.textContent = Number(calcKrw).toLocaleString();
-            krwValStr = calcKrw;
+            calcKrwNum = intlVal * exVal / 31.1035;
+            krwCell.textContent = Math.round(calcKrwNum).toLocaleString();
         } else {
             krwCell.textContent = '-';
         }
 
+        const jongroVal = parseFloat(jongroInput.value);
+        if (!isNaN(calcKrwNum) && !isNaN(jongroVal) && calcKrwNum > 0) {
+            const diffVal = jongroVal - Math.round(calcKrwNum);
+            diffCell.textContent = diffVal.toLocaleString();
+            diffCell.style.color = diffVal >= 0 ? '#2563eb' : '#dc2626';
+        } else {
+            diffCell.textContent = '-';
+        }
+    }
+
+    function saveDay(d) {
+        calculateRow(d);
+        const intlInput = document.getElementById(`intl_${d}`);
+        const rowExInput = document.getElementById(`ex_${d}`);
+        const krwCell = document.getElementById(`krw_${d}`);
+        const jongroInput = document.getElementById(`jongro_${d}`);
+        const diffCell = document.getElementById(`diff_${d}`);
+        const jaraInput = document.getElementById(`jara_${d}`);
+
         if (!db[currentMonth]) db[currentMonth] = { exchange: '', days: {} };
         if (!db[currentMonth].days) db[currentMonth].days = {};
 
-        db[currentMonth].exchange = commonExInput.value;
+        db[currentMonth].exchange = document.getElementById('commonEx').value;
         db[currentMonth].days[d] = {
             intl: intlInput.value,
             ex: rowExInput.value,
-            krw: krwValStr
+            krw: krwCell.textContent,
+            jongro: jongroInput.value,
+            diff: diffCell.textContent,
+            jara: jaraInput.value
         };
         saveDB();
         updateChart();
-        alert(`${d}일 데이터가 저장되었습니다.`);
+        alert(`${d}일 데이터가 안전하게 저장되었습니다.`);
     }
 
     function calculateAll() {
         const [year, month] = currentMonth.split('-').map(Number);
         const lastDay = new Date(year, month, 0).getDate();
         for (let d = 1; d <= lastDay; d++) {
-            const intlInput = document.getElementById(`intl_${d}`);
-            const commonExInput = document.getElementById('commonEx');
-            const rowExInput = document.getElementById(`ex_${d}`);
-            const krwCell = document.getElementById(`krw_${d}`);
-            if (!intlInput) continue;
-
-            const intlVal = parseFloat(intlInput.value);
-            const commonExVal = parseFloat(commonExInput.value);
-            let exVal = parseFloat(rowExInput.value);
-            if (!exVal && !isNaN(commonExVal)) exVal = commonExVal;
-
-            if (!isNaN(intlVal) && !isNaN(exVal)) {
-                const calcKrw = (intlVal * exVal / 31.1035).toFixed(0);
-                krwCell.textContent = Number(calcKrw).toLocaleString();
-            }
+            calculateRow(d);
         }
     }
 
@@ -403,7 +423,7 @@
 
     function saveDB() {
         try {
-            localStorage.setItem('kitco_gold_db', JSON.stringify(db));
+            localStorage.setItem('kitco_gold_perfect_db', JSON.stringify(db));
         } catch (e) {
             console.error(e);
         }
@@ -447,7 +467,9 @@
             labels.push(`${d}일`);
             const dayData = monthData.days && monthData.days[d];
             if (dayData && dayData.krw && dayData.krw !== '-') {
-                data.push(Number(dayData.krw));
+                const cleanKrw = Number(String(dayData.krw).replace(/,/g, ''));
+                if (!isNaN(cleanKrw)) data.push(cleanKrw);
+                else data.push(null);
             } else {
                 data.push(null);
             }
