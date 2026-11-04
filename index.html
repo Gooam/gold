@@ -113,8 +113,8 @@
             border-radius: 6px;
         }
         table {
-            width: 715px;
-            border-collapse: collapse; /* 겹침 방지를 위한 표준 병합 방식 */
+            width: 680px;
+            border-collapse: collapse;
         }
         th, td {
             border: 1px solid var(--border-color);
@@ -132,15 +132,16 @@
             white-space: nowrap;
             padding: 5px 2px;
         }
-        /* 2. 왼쪽 첫 번째 '일자' 열 고정 및 침범 원천 차단 */
+        /* 2. 왼쪽 첫 번째 '일자' 열 고정 (원래의 아담한 폭 48px로 복구 및 겹침 철벽 방어) */
         td:first-child, th:first-child {
             position: sticky;
             left: 0;
             z-index: 50;
-            width: 75px !important;
-            min-width: 75px !important;
-            max-width: 75px !important;
+            width: 48px !important;
+            min-width: 48px !important;
+            max-width: 48px !important;
             background: #ffffff !important;
+            box-shadow: 2px 0 5px -2px rgba(0, 0, 0, 0.15); /* 우측 밀림 침범 원천 차단 */
         }
         /* 3. 상단 왼쪽 모서리 */
         th:first-child {
@@ -148,9 +149,9 @@
             background: #cbd5e1 !important;
         }
 
-        /* 날짜별 마지막 행 하단 경계선: 얄싹한 두께에 세련된 레드 색상(#dc2626) */
+        /* V자로 짚어주신 날짜 구분선: 다른선과 똑같은 얄싹한 두께, 색상만 레드(#dc2626) */
         tr.day-last-row td {
-            border-bottom: 1.5px solid #dc2626 !important;
+            border-bottom: 1px solid #dc2626 !important;
         }
 
         td input {
@@ -268,7 +269,7 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width: 75px;">일자</th>
+                    <th style="width: 48px;">일자</th>
                     <th style="width: 55px;">국제가</th>
                     <th style="width: 45px;">환율</th>
                     <th style="width: 55px;">1g원화</th>
