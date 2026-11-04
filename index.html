@@ -114,7 +114,7 @@
             position: relative;
         }
         table {
-            width: 680px;
+            width: 715px; /* 일자 칸 확장된 만큼 전체 폭 조절 */
             border-collapse: separate;
             border-spacing: 0;
         }
@@ -136,13 +136,17 @@
             padding: 5px 2px;
             border-bottom: 2px solid #94a3b8;
         }
-        /* 2. 왼쪽 첫 번째 '일자' 열 고정 및 배경 불투명화로 겹침 현상 원천 차단 */
+        /* 2. 왼쪽 첫 번째 '일자' 열을 마스타의 빨간 선 위치에 맞게 넉넉히 고정하고 철벽 방어선 구축 */
         td:first-child, th:first-child {
             position: sticky;
             left: 0;
             z-index: 50;
-            background: #ffffff !important; /* 무조건 불투명 흰색으로 덮기 */
-            border-right: 2px solid #94a3b8;
+            width: 75px !important; /* 마스타가 짚어주신 위치에 딱 맞춘 넉넉한 폭 */
+            min-width: 75px !important;
+            max-width: 75px !important;
+            background: #ffffff !important;
+            border-right: 3px solid #64748b !important; /* 침범 불가 굵은 철벽 경계선 */
+            box-shadow: 4px 0 6px -2px rgba(0, 0, 0, 0.1); /* 입체감으로 겹침 완전 차단 */
         }
         /* 3. 모서리 구역 */
         th:first-child {
@@ -171,6 +175,7 @@
             gap: 2px;
             white-space: nowrap;
             background: #ffffff;
+            width: 100%;
         }
         .btn-day-add {
             background: #059669;
@@ -269,7 +274,7 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width: 40px;">일자</th>
+                    <th style="width: 75px;">일자</th>
                     <th style="width: 55px;">국제가</th>
                     <th style="width: 45px;">환율</th>
                     <th style="width: 55px;">1g원화</th>
