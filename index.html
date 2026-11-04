@@ -136,30 +136,19 @@
             border-bottom: 1px solid var(--border-color);
         }
 
-        /* 1열('일자')과 2열('국제가')을 동일한 고정 그룹으로 묶어서 완벽 방어 */
+        /* 모든 행의 첫 번째 칸('일자')을 개별적으로 완벽 고정하여 침범 원천 차단 */
         td:first-child, th:first-child {
             position: sticky;
             left: 0;
-            z-index: 999;
+            z-index: 50;
             width: 48px !important;
             min-width: 48px !important;
             max-width: 48px !important;
             background-color: #ffffff !important;
         }
         th:first-child {
-            z-index: 1005;
+            z-index: 150;
             background-color: #cbd5e1 !important;
-        }
-
-        td:nth-child(2), th:nth-child(2) {
-            position: sticky;
-            left: 48px !important; /* 1열 폭만큼 정확히 이어서 고정 */
-            z-index: 998;
-            background-color: #ffffff !important;
-        }
-        th:nth-child(2) {
-            z-index: 1004;
-            background-color: #e2e8f0 !important;
         }
 
         /* 날짜 구분선: 다른 선과 똑같은 얄싹한 두께, 색상만 레드(#dc2626) */
@@ -473,14 +462,21 @@
                     tr.classList.add('day-last-row');
                 }
                 
+                // rowspan 대신 각 행마다 독립된 첫 번째 칸을 생성하되, 첫 행에만 날짜와 +추가 버튼 배치
                 let dayCellHtml = '';
                 if (rowIndex === 0) {
                     dayCellHtml = `
-                        <td rowspan="${rows.length}" style="vertical-align: middle; background-color: #ffffff;">
+                        <td style="background-color: #ffffff;">
                             <div class="date-cell-container">
                                 <b>${d}일</b>
                                 <button class="btn-day-add" onclick="addRow(${d})">+추가</button>
                             </div>
+                        </td>
+                    `;
+                } else {
+                    dayCellHtml = `
+                        <td style="background-color: #ffffff;">
+                            <div class="date-cell-container" style="color: transparent; user-select: none;">-</div>
                         </td>
                     `;
                 }
@@ -521,7 +517,7 @@
 
                 tr.innerHTML = `
                     ${dayCellHtml}
-                    <td style="background-color: #ffffff;"><input type="text" inputmode="decimal" id="intl_${d}_${rowIndex}" value="${intlFormatted}" placeholder="국제가" oninput="formatAndCalcInput(this, ${d}, ${rowIndex})"></td>
+                    <td><input type="text" inputmode="decimal" id="intl_${d}_${rowIndex}" value="${intlFormatted}" placeholder="국제가" oninput="formatAndCalcInput(this, ${d}, ${rowIndex})"></td>
                     <td><input type="text" inputmode="decimal" id="ex_${d}_${rowIndex}" value="${exFormatted}" placeholder="환율" oninput="formatAndCalcInput(this, ${d}, ${rowIndex})"></td>
                     <td class="krw-col" id="krw_${d}_${rowIndex}">${krwStr}</td>
                     <td class="don-col" id="don_${d}_${rowIndex}">${donStr}</td>
