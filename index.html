@@ -111,16 +111,13 @@
             margin-bottom: 8px;
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            position: relative;
         }
         table {
-            width: 715px; /* 일자 칸 확장된 만큼 전체 폭 조절 */
-            border-collapse: separate;
-            border-spacing: 0;
+            width: 715px;
+            border-collapse: collapse; /* 겹침 방지를 위한 표준 병합 방식 */
         }
         th, td {
-            border-bottom: 1px solid var(--border-color);
-            border-right: 1px solid var(--border-color);
+            border: 1px solid var(--border-color);
             padding: 2px;
             text-align: center;
             font-size: 11px;
@@ -134,29 +131,26 @@
             background: #e2e8f0;
             white-space: nowrap;
             padding: 5px 2px;
-            border-bottom: 2px solid #94a3b8;
         }
-        /* 2. 왼쪽 첫 번째 '일자' 열을 마스타의 빨간 선 위치에 맞게 넉넉히 고정하고 철벽 방어선 구축 */
+        /* 2. 왼쪽 첫 번째 '일자' 열 고정 및 침범 원천 차단 */
         td:first-child, th:first-child {
             position: sticky;
             left: 0;
             z-index: 50;
-            width: 75px !important; /* 마스타가 짚어주신 위치에 딱 맞춘 넉넉한 폭 */
+            width: 75px !important;
             min-width: 75px !important;
             max-width: 75px !important;
             background: #ffffff !important;
-            border-right: 3px solid #64748b !important; /* 침범 불가 굵은 철벽 경계선 */
-            box-shadow: 4px 0 6px -2px rgba(0, 0, 0, 0.1); /* 입체감으로 겹침 완전 차단 */
         }
-        /* 3. 모서리 구역 */
+        /* 3. 상단 왼쪽 모서리 */
         th:first-child {
             z-index: 150;
             background: #cbd5e1 !important;
         }
 
-        /* 날짜별 마지막 행 경계선 진하게 */
+        /* 날짜별 마지막 행 하단 경계선: 얄싹한 두께에 세련된 레드 색상(#dc2626) */
         tr.day-last-row td {
-            border-bottom: 2px solid #64748b !important;
+            border-bottom: 1.5px solid #dc2626 !important;
         }
 
         td input {
