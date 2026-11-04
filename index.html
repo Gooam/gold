@@ -114,7 +114,7 @@
         }
         table {
             width: 680px;
-            border-collapse: separate; /* 침범 현상을 잡는 핵심 방식 */
+            border-collapse: separate;
             border-spacing: 0;
         }
         th, td {
@@ -135,21 +135,22 @@
             padding: 5px 2px;
             border-bottom: 1px solid var(--border-color);
         }
-        /* 2. 왼쪽 첫 번째 '일자' 열 고정 및 침범 원천 차단 철옹성 설정 */
+        /* 2. 왼쪽 첫 번째 '일자' 열 고정 및 침범 원천 차단 (강력한 배경 + 그림자 방어막) */
         td:first-child, th:first-child {
             position: sticky;
             left: 0;
-            z-index: 60;
+            z-index: 80;
             width: 48px !important;
             min-width: 48px !important;
             max-width: 48px !important;
-            background: #ffffff !important;
-            box-shadow: 2px 0 5px -2px rgba(0, 0, 0, 0.15); /* 오른쪽 데이터 파고듦 차단 그림자 방어막 */
+            background-color: #ffffff !important;
+            /* 오른쪽에서 파고드는 글자들을 시각적으로 완전히 덮어버리는 묵직한 그림자 방어막 */
+            box-shadow: 5px 0 8px -2px rgba(255, 255, 255, 0.9), 3px 0 5px rgba(0, 0, 0, 0.1);
         }
         /* 3. 모서리 구역 */
         th:first-child {
             z-index: 150;
-            background: #cbd5e1 !important;
+            background-color: #cbd5e1 !important;
         }
 
         /* 날짜 구분선: 다른 선과 똑같은 얄싹한 두께, 색상만 레드(#dc2626) */
@@ -172,7 +173,7 @@
             justify-content: center;
             gap: 2px;
             white-space: nowrap;
-            background: #ffffff;
+            background-color: #ffffff;
             width: 100%;
         }
         .btn-day-add {
@@ -466,7 +467,7 @@
                 let dayCellHtml = '';
                 if (rowIndex === 0) {
                     dayCellHtml = `
-                        <td rowspan="${rows.length}" style="vertical-align: middle; background: #ffffff;">
+                        <td rowspan="${rows.length}" style="vertical-align: middle; background-color: #ffffff;">
                             <div class="date-cell-container">
                                 <b>${d}일</b>
                                 <button class="btn-day-add" onclick="addRow(${d})">+추가</button>
@@ -519,7 +520,7 @@
                     <td class="diff-col" id="diff_${d}_${rowIndex}" style="color: ${diffColor};">${diffStr}</td>
                     <td><input type="text" inputmode="decimal" id="zaryogeum_${d}_${rowIndex}" value="${zaryoFormatted}" placeholder="자료금" oninput="onZaryogeumInput(this, ${d}, ${rowIndex})"></td>
                     <td class="time-col" id="time_${d}_${rowIndex}">${row.time || ''}</td>
-                    <td style="text-align: center; background: #ffffff;">${delButtonHtml}</td>
+                    <td style="text-align: center; background-color: #ffffff;">${delButtonHtml}</td>
                 `;
                 tbody.appendChild(tr);
             });
