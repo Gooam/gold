@@ -101,7 +101,7 @@
             background: #fff;
             padding: 4px 8px;
         }
-        /* 30% 슬림 압축된 가로 스크롤 테이블 */
+        /* 30% 더 슬림하게 압축된 가로 스크롤 테이블 */
         .table-wrapper {
             width: 100%;
             overflow-x: auto;
@@ -109,7 +109,7 @@
             margin-bottom: 8px;
         }
         table {
-            width: 630px;
+            width: 680px;
             border-collapse: collapse;
         }
         th, td {
@@ -183,16 +183,11 @@
             white-space: nowrap;
             font-size: 10px;
         }
-        /* 자료금, 시간, 삭제 버튼을 한 줄에 깔끔하게 배치 */
-        .zaryo-inline {
-            display: flex;
-            align-items: center;
-            gap: 2px;
-            justify-content: space-between;
-        }
-        .time-display {
-            font-size: 8px;
+        .time-col {
+            font-size: 9px;
             color: #64748b;
+            text-align: center;
+            font-weight: bold;
             white-space: nowrap;
         }
         /* 그래프 영역 */
@@ -241,14 +236,16 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width: 45px;">일자</th>
-                    <th style="width: 65px;">국제가</th>
-                    <th style="width: 55px;">환율</th>
-                    <th style="width: 65px;">1g원화</th>
-                    <th style="width: 65px;">국제가(돈)</th>
-                    <th style="width: 65px;">종로시세</th>
-                    <th style="width: 55px;">차액</th>
-                    <th style="width: 110px;">자료금/시간/삭제</th>
+                    <th style="width: 40px;">일자</th>
+                    <th style="width: 55px;">국제가</th>
+                    <th style="width: 45px;">환율</th>
+                    <th style="width: 55px;">1g원화</th>
+                    <th style="width: 55px;">국제가(돈)</th>
+                    <th style="width: 55px;">종로시세</th>
+                    <th style="width: 45px;">차액</th>
+                    <th style="width: 65px;">자료금</th>
+                    <th style="width: 42px;">시간</th>
+                    <th style="width: 38px;">삭제</th>
                 </tr>
             </thead>
             <tbody id="tableBody"></tbody>
@@ -357,15 +354,24 @@
     }
 
     function addNewMonth() {
-        const nowStr = getTodayMonthStr();
-        if (!db[nowStr]) {
-            db[nowStr] = { exchange: '', days: {} };
+        // 현재 선택된 달의 다음 달을 자동으로 계산하거나 오늘 날짜 기준으로 생성
+        const parts = currentMonth.split('-');
+        let y = parseInt(parts[0], 10);
+        let m = parseInt(parts[1], 10) + 1;
+        if (m > 12) {
+            m = 1;
+            y++;
         }
-        currentMonth = nowStr;
+        const nextMonthStr = `${y}-${String(m).padStart(2, '0')}`;
+
+        if (!db[nextMonthStr]) {
+            db[nextMonthStr] = { exchange: '', days: {} };
+        }
+        currentMonth = nextMonthStr;
         saveDB();
         renderMonthSelect();
         loadMonthData();
-        alert(`${nowStr} 일지로 전환되었습니다.`);
+        alert(`${nextMonthStr} 새 월 일지로 전환되었습니다.`);
     }
 
     function changeMonth() {
@@ -409,7 +415,7 @@
         const parts = currentMonth.split('-');
         const year = parseInt(parts[0], 10);
         const month = parseInt(parts[1], 10);
-        const lastDay = new Date(year, month, 0).getDate();
+        const lastDay = 31; // 무조건 31일까지 꽉 차게 나타나도록 고정
 
         for (let d = 1; d <= lastDay; d++) {
             const dayKey = String(d);
@@ -475,13 +481,9 @@
                     <td class="don-col" id="don_${d}_${rowIndex}">${donStr}</td>
                     <td><input type="text" inputmode="decimal" id="jongro_${d}_${rowIndex}" value="${jongroFormatted}" placeholder="종로" oninput="formatAndCalcInput(this, ${d}, ${rowIndex})"></td>
                     <td class="diff-col" id="diff_${d}_${rowIndex}" style="color: ${diffColor};">${diffStr}</td>
-                    <td>
-                        <div class="zaryo-inline">
-                            <input type="text" inputmode="decimal" id="zaryogeum_${d}_${rowIndex}" value="${zaryoFormatted}" placeholder="자료금" oninput="onZaryogeumInput(this, ${d}, ${rowIndex})" style="flex: 1; min-width: 35px;">
-                            <span class="time-display" id="time_${d}_${rowIndex}">${row.time || ''}</span>
-                            ${delButtonHtml}
-                        </div>
-                    </td>
+                    <td><input type="text" inputmode="decimal" id="zaryogeum_${d}_${rowIndex}" value="${zaryoFormatted}" placeholder="자료금" oninput="onZaryogeumInput(this, ${d}, ${rowIndex})"></td>
+                    <td class="time-col" id="time_${d}_${rowIndex}">${row.time || ''}</td>
+                    <td style="text-align: center;">${delButtonHtml}</td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -510,14 +512,14 @@
 
     function onZaryogeumInput(input, d, rowIndex) {
         input.value = formatNumber(input.value);
-        const timeSpan = document.getElementById(`time_${d}_${rowIndex}`);
-        if (input && timeSpan) {
+        const timeCell = document.getElementById(`time_${d}_${rowIndex}`);
+        if (input && timeCell) {
             if (input.value.trim() !== '') {
-                if (!timeSpan.textContent) {
-                    timeSpan.textContent = getCurrentTimeStr();
+                if (!timeCell.textContent) {
+                    timeCell.textContent = getCurrentTimeStr();
                 }
             } else {
-                timeSpan.textContent = '';
+                timeCell.textContent = '';
             }
         }
         saveCurrentState();
@@ -569,8 +571,7 @@
         const exInput = document.getElementById('commonEx');
         db[currentMonth].exchange = exInput ? parseNumber(exInput.value) || '' : '';
 
-        const parts = currentMonth.split('-');
-        const lastDay = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10), 0).getDate();
+        const lastDay = 31;
 
         for (let d = 1; d <= lastDay; d++) {
             const rows = db[currentMonth].days[d];
@@ -584,7 +585,7 @@
                 const jongroInput = document.getElementById(`jongro_${d}_${rowIndex}`);
                 const diffCell = document.getElementById(`diff_${d}_${rowIndex}`);
                 const zaryogeumInput = document.getElementById(`zaryogeum_${d}_${rowIndex}`);
-                const timeSpan = document.getElementById(`time_${d}_${rowIndex}`);
+                const timeCell = document.getElementById(`time_${d}_${rowIndex}`);
 
                 if (intlInput) {
                     row.intl = parseNumber(intlInput.value) || '';
@@ -594,7 +595,7 @@
                     row.jongro = parseNumber(jongroInput.value) || '';
                     row.diff = diffCell.textContent;
                     row.zaryogeum = parseNumber(zaryogeumInput.value) || '';
-                    row.time = timeSpan ? timeSpan.textContent : '';
+                    row.time = timeCell ? timeCell.textContent : '';
                 }
             });
         }
@@ -603,8 +604,7 @@
     }
 
     function calculateAll() {
-        const parts = currentMonth.split('-');
-        const lastDay = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10), 0).getDate();
+        const lastDay = 31;
         for (let d = 1; d <= lastDay; d++) {
             const rows = db[currentMonth].days[d];
             if (rows) {
@@ -684,7 +684,7 @@
                         borderColor: '#2563eb',
                         backgroundColor: 'rgba(37, 99, 235, 0.05)',
                         borderWidth: 2,
-                        pointRadius: 1.5,      /* 아주 작은 점으로 대폭 축소 */
+                        pointRadius: 1.5,
                         pointHoverRadius: 4,
                         tension: 0.1,
                         fill: false
@@ -695,7 +695,7 @@
                         borderColor: '#dc2626',
                         backgroundColor: 'rgba(220, 38, 38, 0.05)',
                         borderWidth: 2,
-                        pointRadius: 1.5,      /* 아주 작은 점으로 대폭 축소 */
+                        pointRadius: 1.5,
                         pointHoverRadius: 4,
                         tension: 0.1,
                         fill: false
@@ -723,8 +723,7 @@
     function updateChart() {
         if (!chartInstance) return;
         const monthData = db[currentMonth] || { days: {} };
-        const parts = currentMonth.split('-');
-        const lastDay = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10), 0).getDate();
+        const lastDay = 31;
 
         let labels = [];
         let donData = [];
