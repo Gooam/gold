@@ -136,19 +136,18 @@
             border-bottom: 1px solid var(--border-color);
         }
 
-        /* 첫 번째 '일자' 열을 세로 중앙 병합 상태에서도 완벽하게 스티키 고정 및 침범 원천 차단 */
+        /* [핵심] 모든 행의 첫 번째 칸을 독립적으로 완벽 고정하여 침범 원천 차단 */
         td:first-child, th:first-child {
             position: sticky;
             left: 0;
-            z-index: 999;
+            z-index: 50;
             width: 48px !important;
             min-width: 48px !important;
             max-width: 48px !important;
             background-color: #ffffff !important;
-            opacity: 1 !important;
         }
         th:first-child {
-            z-index: 1005;
+            z-index: 150;
             background-color: #cbd5e1 !important;
         }
 
@@ -456,6 +455,9 @@
             }
             const rows = monthData.days[dayKey];
 
+            // 추가된 행들이 많을 때, 날짜를 정확히 중간(Math.floor(rows.length / 2)) 행에 배치하여 시인성 극대화
+            const middleIndex = Math.floor(rows.length / 2);
+
             rows.forEach((row, rowIndex) => {
                 const tr = document.createElement('tr');
                 
@@ -463,17 +465,37 @@
                     tr.classList.add('day-last-row');
                 }
                 
-                // 예전처럼 rowspan을 완벽하게 부활시켜 세로 중앙에 묵직하게 위치하도록 적용
                 let dayCellHtml = '';
-                if (rowIndex === 0) {
-                    dayCellHtml = `
-                        <td rowspan="${rows.length}" style="vertical-align: middle; background-color: #ffffff;">
-                            <div class="date-cell-container">
-                                <b>${d}일</b>
-                                <button class="btn-day-add" onclick="addRow(${d})">+추가</button>
-                            </div>
-                        </td>
-                    `;
+                if (rows.length === 1) {
+                    // 1개 행일 때는 당연히 그 행에 표시
+                    if (rowIndex === 0) {
+                        dayCellHtml = `
+                            <td style="background-color: #ffffff;">
+                                <div class="date-cell-container">
+                                    <b>${d}일</b>
+                                    <button class="btn-day-add" onclick="addRow(${d})">+추가</button>
+                                </div>
+                            </td>
+                        `;
+                    }
+                } else {
+                    // 여러 행일 때, 중간(middleIndex) 행에 날짜와 +추가 버튼을 배치하여 중앙 정렬 시인성 확보
+                    if (rowIndex === middleIndex) {
+                        dayCellHtml = `
+                            <td style="background-color: #ffffff;">
+                                <div class="date-cell-container">
+                                    <b>${d}일</b>
+                                    <button class="btn-day-add" onclick="addRow(${d})">+추가</button>
+                                </div>
+                            </td>
+                        `;
+                    } else {
+                        dayCellHtml = `
+                            <td style="background-color: #ffffff;">
+                                <div class="date-cell-container" style="color: transparent; user-select: none;">-</div>
+                            </td>
+                        `;
+                    }
                 }
 
                 let delButtonHtml = '';
