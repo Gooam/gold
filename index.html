@@ -135,7 +135,7 @@
             padding: 5px 2px;
             border-bottom: 1px solid var(--border-color);
         }
-        /* 2. 왼쪽 첫 번째 '일자' 열 고정 (그림자 완전 제거 및 깔끔한 불투명 백그라운드로 침범 차단) */
+        /* 2. 왼쪽 첫 번째 '일자' 열 고정 및 overflow 클리핑으로 침범 원천 차단 */
         td:first-child, th:first-child {
             position: sticky;
             left: 0;
@@ -144,15 +144,14 @@
             min-width: 48px !important;
             max-width: 48px !important;
             background-color: #ffffff !important;
-            opacity: 1 !important;
-            transform: translateZ(0);
-            box-shadow: none !important; /* 거슬리던 굵은 선(그림자) 완전 삭제 */
+            overflow: hidden !important; /* 오른쪽에서 파고드는 글자를 영역 밖에서 강제로 잘라냄 */
+            clip: rect(0, auto, auto, 0);
+            box-shadow: none !important;
         }
         /* 3. 상단 왼쪽 모서리 */
         th:first-child {
             z-index: 1000;
             background-color: #cbd5e1 !important;
-            box-shadow: none !important;
         }
 
         /* 날짜 구분선: 다른 선과 똑같은 얄싹한 두께, 색상만 레드(#dc2626) */
@@ -177,6 +176,7 @@
             white-space: nowrap;
             background-color: #ffffff;
             width: 100%;
+            overflow: hidden; /* 내부 글자 삐져나옴 방지 */
         }
         .btn-day-add {
             background: #059669;
