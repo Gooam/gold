@@ -101,7 +101,7 @@
             background: #fff;
             padding: 4px 8px;
         }
-        /* 40% 슬림 압축된 모바일 최적화 가로 스크롤 테이블 */
+        /* 모바일에 최적화된 슬림 압축 가로 스크롤 테이블 */
         .table-wrapper {
             width: 100%;
             overflow-x: auto;
@@ -258,8 +258,10 @@
 <script>
     let db = {};
     try {
-        const saved = localStorage.getItem('kitco_gold_master_ultimate_db');
-        if (saved) db = JSON.parse(saved);
+        const saved = localStorage.getItem('kitco_gold_master_safest_db');
+        if (saved) {
+            db = JSON.parse(saved);
+        }
     } catch (e) {
         db = {};
     }
@@ -296,10 +298,7 @@
     }
 
     function formatAndCalcInput(input, d, rowIndex) {
-        const cursor = input.selectionStart;
-        const oldVal = input.value;
-        const formatted = formatNumber(oldVal);
-        input.value = formatted;
+        input.value = formatNumber(input.value);
         calculateRow(d, rowIndex);
     }
 
@@ -309,21 +308,32 @@
     }
 
     function init() {
-        if (!db || typeof db !== 'object' || Object.keys(db).length === 0) {
+        try {
+            if (!db || typeof db !== 'object' || Array.isArray(db) || Object.keys(db).length === 0) {
+                const todayStr = getTodayMonthStr();
+                db = {};
+                db[todayStr] = { exchange: '', days: {} };
+                currentMonth = todayStr;
+            } else {
+                const keys = Object.keys(db).sort();
+                currentMonth = keys[keys.length - 1];
+            }
+            if (!db[currentMonth]) {
+                db[currentMonth] = { exchange: '', days: {} };
+            }
+            renderMonthSelect();
+            loadMonthData();
+            initChart();
+        } catch (err) {
+            console.error("Init Error:", err);
             const todayStr = getTodayMonthStr();
             db = {};
             db[todayStr] = { exchange: '', days: {} };
             currentMonth = todayStr;
-        } else {
-            const keys = Object.keys(db).sort();
-            currentMonth = keys[keys.length - 1];
+            renderMonthSelect();
+            loadMonthData();
+            initChart();
         }
-        if (!db[currentMonth]) {
-            db[currentMonth] = { exchange: '', days: {} };
-        }
-        renderMonthSelect();
-        loadMonthData();
-        initChart();
     }
 
     function renderMonthSelect() {
@@ -381,17 +391,23 @@
             db[currentMonth] = { exchange: '', days: {} };
         }
         const monthData = db[currentMonth];
-        document.getElementById('commonEx').value = formatNumber(monthData.exchange || '');
+        if (!monthData.days) monthData.days = {};
+
+        const exInput = document.getElementById('commonEx');
+        if (exInput) exInput.value = formatNumber(monthData.exchange || '');
         
         const tbody = document.getElementById('tableBody');
+        if (!tbody) return;
         tbody.innerHTML = '';
 
-        const [year, month] = currentMonth.split('-').map(Number);
-        const lastDay = new Date(year, month, 0).getDate(); // 31일 누락 버그 완전 차단
+        const parts = currentMonth.split('-');
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10);
+        const lastDay = new Date(year, month, 0).getDate(); // 31일 누락 방지 완벽 계산
 
         for (let d = 1; d <= lastDay; d++) {
             const dayKey = String(d);
-            if (!monthData.days[dayKey] || monthData.days[dayKey].length === 0) {
+            if (!monthData.days[dayKey] || !Array.isArray(monthData.days[dayKey]) || monthData.days[dayKey].length === 0) {
                 monthData.days[dayKey] = [{ intl: '', ex: '', krw: '-', don: '-', jongro: '', diff: '-', zaryogeum: '', time: '' }];
             }
             const rows = monthData.days[dayKey];
@@ -421,14 +437,39 @@
                 const jongroFormatted = formatNumber(row.jongro);
                 const zaryoFormatted = formatNumber(row.zaryogeum);
 
+                // 차액 및 g원화, 돈원화 계산 복구
+                let krwStr = '-';
+                let donStr = '-';
+                let diffStr = '-';
+                let diffColor = '#1e293b';
+
+                const intlVal = parseNumber(row.intl);
+                const commonExVal = parseNumber(monthData.exchange);
+                let exVal = parseNumber(row.ex);
+                if (isNaN(exVal)) exVal = commonExVal;
+
+                if (!isNaN(intlVal) && !isNaN(exVal)) {
+                    const calcKrw = intlVal * exVal / 31.1035;
+                    const calcDon = calcKrw * 3.75;
+                    krwStr = Math.round(calcKrw).toLocaleString();
+                    donStr = Math.round(calcDon).toLocaleString();
+
+                    const jongroVal = parseNumber(row.jongro);
+                    if (!isNaN(jongroVal)) {
+                        const diffVal = jongroVal - Math.round(calcDon);
+                        diffStr = diffVal.toLocaleString();
+                        diffColor = diffVal >= 0 ? '#2563eb' : '#dc2626';
+                    }
+                }
+
                 tr.innerHTML = `
                     ${dayCellHtml}
                     <td><input type="text" inputmode="decimal" id="intl_${d}_${rowIndex}" value="${intlFormatted}" placeholder="국제가" oninput="formatAndCalcInput(this, ${d}, ${rowIndex})"></td>
                     <td><input type="text" inputmode="decimal" id="ex_${d}_${rowIndex}" value="${exFormatted}" placeholder="환율" oninput="formatAndCalcInput(this, ${d}, ${rowIndex})"></td>
-                    <td class="krw-col" id="krw_${d}_${rowIndex}">${row.krw && row.krw !== '-' ? Number(row.krw).toLocaleString() : '-'}</td>
-                    <td class="don-col" id="don_${d}_${rowIndex}">${row.don && row.don !== '-' ? Number(row.don).toLocaleString() : '-'}</td>
+                    <td class="krw-col" id="krw_${d}_${rowIndex}">${krwStr}</td>
+                    <td class="don-col" id="don_${d}_${rowIndex}">${donStr}</td>
                     <td><input type="text" inputmode="decimal" id="jongro_${d}_${rowIndex}" value="${jongroFormatted}" placeholder="종로" oninput="formatAndCalcInput(this, ${d}, ${rowIndex})"></td>
-                    <td class="diff-col" id="diff_${d}_${rowIndex}">${row.diff || '-'}</td>
+                    <td class="diff-col" id="diff_${d}_${rowIndex}" style="color: ${diffColor};">${diffStr}</td>
                     <td>
                         <div style="display: flex; align-items: center;">
                             <input type="text" inputmode="decimal" id="zaryogeum_${d}_${rowIndex}" value="${zaryoFormatted}" placeholder="자료금" oninput="onZaryogeumInput(this, ${d}, ${rowIndex})" style="flex: 1; min-width: 40px;">
@@ -491,7 +532,7 @@
         const intlVal = parseNumber(intlInput.value);
         const commonExVal = parseNumber(commonExInput.value);
         let exVal = parseNumber(rowExInput.value);
-        if (isNaN(exVal) && !isNaN(commonExVal)) exVal = commonExVal;
+        if (isNaN(exVal)) exVal = commonExVal;
 
         let calcKrwNum = 0;
         let calcDonNum = 0;
@@ -520,10 +561,11 @@
 
     function saveCurrentState() {
         if (!db[currentMonth]) db[currentMonth] = { exchange: '', days: {} };
-        db[currentMonth].exchange = parseNumber(document.getElementById('commonEx').value) || '';
+        const exInput = document.getElementById('commonEx');
+        db[currentMonth].exchange = exInput ? parseNumber(exInput.value) || '' : '';
 
-        const [year, month] = currentMonth.split('-').map(Number);
-        const lastDay = new Date(year, month, 0).getDate();
+        const parts = currentMonth.split('-');
+        const lastDay = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10), 0).getDate();
 
         for (let d = 1; d <= lastDay; d++) {
             const rows = db[currentMonth].days[d];
@@ -556,8 +598,8 @@
     }
 
     function calculateAll() {
-        const [year, month] = currentMonth.split('-').map(Number);
-        const lastDay = new Date(year, month, 0).getDate();
+        const parts = currentMonth.split('-');
+        const lastDay = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10), 0).getDate();
         for (let d = 1; d <= lastDay; d++) {
             const rows = db[currentMonth].days[d];
             if (rows) {
@@ -586,10 +628,15 @@
         const dataStr = prompt("백업했던 텍스트를 붙여넣기 하세요:");
         if (dataStr) {
             try {
-                db = JSON.parse(dataStr);
-                saveDB();
-                init();
-                alert("데이터가 성공적으로 복구되었습니다!");
+                const parsed = JSON.parse(dataStr);
+                if (parsed && typeof parsed === 'object') {
+                    db = parsed;
+                    saveDB();
+                    init();
+                    alert("데이터가 성공적으로 복구되었습니다!");
+                } else {
+                    alert("잘못된 데이터 형식입니다.");
+                }
             } catch (e) {
                 alert("잘못된 데이터 형식입니다.");
             }
@@ -598,7 +645,7 @@
 
     function saveDB() {
         try {
-            localStorage.setItem('kitco_gold_master_ultimate_db', JSON.stringify(db));
+            localStorage.setItem('kitco_gold_master_safest_db', JSON.stringify(db));
         } catch (e) {
             console.error(e);
         }
@@ -667,8 +714,8 @@
     function updateChart() {
         if (!chartInstance) return;
         const monthData = db[currentMonth] || { days: {} };
-        const [year, month] = currentMonth.split('-').map(Number);
-        const lastDay = new Date(year, month, 0).getDate();
+        const parts = currentMonth.split('-');
+        const lastDay = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10), 0).getDate();
 
         let labels = [];
         let donData = [];
@@ -680,6 +727,31 @@
                 rows.forEach((row, idx) => {
                     labels.push(`${d}일(${idx+1})`);
                     
-                    // 국제가(돈) 데이터
                     if (row.don && row.don !== '-') {
-                        const clean
+                        const cleanDon = Number(String(row.don).replace(/,/g, ''));
+                        donData.push(!isNaN(cleanDon) ? cleanDon : null);
+                    } else {
+                        donData.push(null);
+                    }
+
+                    if (row.jongro !== '' && row.jongro !== null && row.jongro !== undefined) {
+                        const cleanJongro = Number(String(row.jongro).replace(/,/g, ''));
+                        jongroData.push(!isNaN(cleanJongro) ? cleanJongro : null);
+                    } else {
+                        jongroData.push(null);
+                    }
+                });
+            }
+        }
+
+        chartInstance.data.labels = labels;
+        chartInstance.data.datasets[0].data = donData;
+        chartInstance.data.datasets[1].data = jongroData;
+        chartInstance.update();
+    }
+
+    window.onload = init;
+</script>
+
+</body>
+</html>
