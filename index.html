@@ -264,18 +264,42 @@
             cursor: pointer;
             white-space: nowrap;
         }
+        .zoom-btn.active {
+            background: #2563eb;
+            color: #ffffff;
+            border-color: #2563eb;
+        }
         .zoom-btn:active {
             background: #e2e8f0;
         }
-        .chart-scroll-wrapper {
+        .chart-split-body {
+            position: relative;
+            display: flex;
             width: 100%;
             height: 320px;
-            overflow-x: auto;
-            overflow-y: hidden;
-            -webkit-overflow-scrolling: touch;
             border: 1px solid #e2e8f0;
             border-radius: 6px;
             background: #ffffff;
+            overflow: hidden;
+        }
+        .y-axis-fixed-box {
+            position: relative;
+            flex: 0 0 64px;
+            width: 64px;
+            height: 100%;
+            background: #ffffff;
+            border-right: 1px solid #e2e8f0;
+            z-index: 5;
+        }
+        .chart-scroll-wrapper {
+            position: relative;
+            flex: 1 1 auto;
+            height: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            background: #ffffff;
+            z-index: 1;
         }
         .chart-canvas-box {
             position: relative;
@@ -335,16 +359,21 @@
     <!-- 모바일 전용 그래프 영역 -->
     <div class="chart-panel">
         <div class="chart-toolbar">
-            <span class="chart-title" id="zoomStatus">시세 추이 (가로 드래그 · 1.0x)</span>
+            <span class="chart-title" id="zoomStatus">시세 추이 (가로 드래그 · 1.5x)</span>
             <div class="zoom-controls">
-                <button type="button" class="zoom-btn" onclick="zoomChart(1.35)">확대 +</button>
-                <button type="button" class="zoom-btn" onclick="zoomChart(0.65)">축소 -</button>
-                <button type="button" class="zoom-btn" onclick="resetChartZoom()">전체보기</button>
+                <button type="button" class="zoom-btn" id="btnZoomIn" onclick="zoomChart(1.35)">확대 +</button>
+                <button type="button" class="zoom-btn" id="btnZoomOut" onclick="zoomChart(0.72)">축소 -</button>
+                <button type="button" class="zoom-btn" id="btnOverview" onclick="showFullMonthOverview()">전체보기</button>
             </div>
         </div>
-        <div class="chart-scroll-wrapper" id="chartScrollWrapper">
-            <div class="chart-canvas-box" id="chartCanvasBox">
-                <canvas id="goldChart"></canvas>
+        <div class="chart-split-body">
+            <div class="y-axis-fixed-box">
+                <canvas id="yAxisChart"></canvas>
+            </div>
+            <div class="chart-scroll-wrapper" id="chartScrollWrapper">
+                <div class="chart-canvas-box" id="chartCanvasBox">
+                    <canvas id="goldChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -363,7 +392,10 @@
 
     let currentMonth = '';
     let chartInstance = null;
-    let chartScale = 1.0;
+    let yAxisChartInstance = null;
+    // 기본값 1.5배로 넉넉히 펼쳐서 드래그로 편하게 보고, '전체보기'로 한 달 치를 한 화면에 봅니다.
+    let chartScale = 1.5;
+    let isOverviewMode = false;
     let latestChartPointCount = 0;
 
     function getTodayMonthStr() {
@@ -774,6 +806,17 @@
         }
     }
 
+    function updateOverviewButtonStyle() {
+        const btn = document.getElementById('btnOverview');
+        if (btn) {
+            if (isOverviewMode) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        }
+    }
+
     function applyChartWidth(dataPointCount) {
         const wrapper = document.getElementById('chartScrollWrapper');
         const box = document.getElementById('chartCanvasBox');
@@ -781,42 +824,132 @@
         if (!wrapper || !box) return;
 
         latestChartPointCount = dataPointCount;
-        const viewportW = wrapper.clientWidth || 300;
-        const standardW = Math.max(viewportW, dataPointCount * 16);
-        const targetWidth = Math.max(viewportW, Math.round(standardW * chartScale));
+        const viewportW = wrapper.clientWidth || 260;
+
+        let targetWidth = viewportW;
+        if (isOverviewMode) {
+            // 한 달 치 전체 흐름을 한 화면에 쏙 담는 전체보기 모드
+            targetWidth = viewportW;
+        } else {
+            // 스크롤/확대/축소 모드
+            const perPointPx = 14 * chartScale;
+            targetWidth = Math.max(viewportW, Math.round(dataPointCount * perPointPx));
+        }
+
         box.style.width = `${targetWidth}px`;
 
         if (statusEl) {
-            const modeText = chartScale < 0.95 ? '한눈에 축소' : '가로 드래그';
-            statusEl.textContent = `시세 추이 (${modeText} · ${chartScale.toFixed(1)}x)`;
+            if (isOverviewMode) {
+                statusEl.textContent = `시세 추이 (한 달 전체보기)`;
+            } else {
+                statusEl.textContent = `시세 추이 (가로 드래그 · ${chartScale.toFixed(1)}x)`;
+            }
         }
+        updateOverviewButtonStyle();
+
         if (chartInstance) {
             chartInstance.resize();
+        }
+        if (yAxisChartInstance) {
+            yAxisChartInstance.resize();
         }
     }
 
     function zoomChart(factor) {
-        chartScale = Math.min(3.5, Math.max(0.55, Number((chartScale * factor).toFixed(2))));
+        isOverviewMode = false;
+        chartScale = Math.min(3.5, Math.max(0.6, Number((chartScale * factor).toFixed(2))));
         applyChartWidth(latestChartPointCount);
     }
 
-    function resetChartZoom() {
-        chartScale = 1.0;
+    function showFullMonthOverview() {
+        isOverviewMode = true;
         const wrapper = document.getElementById('chartScrollWrapper');
         if (wrapper) wrapper.scrollLeft = 0;
         applyChartWidth(latestChartPointCount);
     }
 
+    function syncYAxisScale(donData, jongroData) {
+        if (!chartInstance || !yAxisChartInstance) return;
+        const allVals = [...donData, ...jongroData].filter(v => typeof v === 'number' && !isNaN(v));
+        if (allVals.length === 0) return;
+
+        const minVal = Math.min(...allVals);
+        const maxVal = Math.max(...allVals);
+        const pad = Math.max(5000, Math.round((maxVal - minVal) * 0.1));
+        const yMin = Math.floor((minVal - pad) / 5000) * 5000;
+        const yMax = Math.ceil((maxVal + pad) / 5000) * 5000;
+
+        chartInstance.options.scales.y.min = yMin;
+        chartInstance.options.scales.y.max = yMax;
+        yAxisChartInstance.options.scales.y.min = yMin;
+        yAxisChartInstance.options.scales.y.max = yMax;
+    }
+
     function initChart() {
         if (typeof Chart === 'undefined') return;
         const canvas = document.getElementById('goldChart');
-        if (!canvas) return;
+        const yCanvas = document.getElementById('yAxisChart');
+        if (!canvas || !yCanvas) return;
         const ctx = canvas.getContext('2d');
+        const yCtx = yCanvas.getContext('2d');
         
         if (chartInstance) {
             chartInstance.destroy();
         }
+        if (yAxisChartInstance) {
+            yAxisChartInstance.destroy();
+        }
 
+        // 왼쪽에 찰싹 붙어서 절대 안 밀리는 금액(Y축) 전용 캔버스
+        yAxisChartInstance = new Chart(yCtx, {
+            type: 'line',
+            data: {
+                labels: [''],
+                datasets: [{
+                    data: [null],
+                    borderWidth: 0,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                layout: {
+                    padding: {
+                        top: 30,
+                        bottom: 24,
+                        left: 4,
+                        right: 2
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: false }
+                },
+                scales: {
+                    x: {
+                        display: false
+                    },
+                    y: {
+                        position: 'left',
+                        beginAtZero: false,
+                        border: { display: false },
+                        grid: { display: false },
+                        ticks: {
+                            maxTicksLimit: 6,
+                            font: { size: 9, weight: 'bold' },
+                            color: '#334155',
+                            callback: function(value) {
+                                return Number(value).toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // 오른쪽 가로 드래그 차트 캔버스 (내부 Y축 눈금은 숨김)
         chartInstance = new Chart(ctx, {
             type: 'line',
             data: {
@@ -887,11 +1020,8 @@
                         position: 'left',
                         beginAtZero: false,
                         ticks: {
-                            maxTicksLimit: 6,
-                            font: { size: 10 },
-                            callback: function(value) {
-                                return Number(value).toLocaleString();
-                            }
+                            display: false,
+                            maxTicksLimit: 6
                         }
                     }
                 }
@@ -905,7 +1035,7 @@
     }
 
     function updateChart() {
-        if (!chartInstance) return;
+        if (!chartInstance || !yAxisChartInstance) return;
         const monthData = db[currentMonth] || { days: {} };
         const lastDay = 31;
 
@@ -946,11 +1076,13 @@
             }
         }
 
+        syncYAxisScale(donData, jongroData);
         applyChartWidth(labels.length);
         chartInstance.data.labels = labels;
         chartInstance.data.datasets[0].data = donData;
         chartInstance.data.datasets[1].data = jongroData;
         chartInstance.update();
+        yAxisChartInstance.update();
     }
 
     window.onload = init;
