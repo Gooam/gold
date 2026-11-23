@@ -226,7 +226,7 @@
             white-space: nowrap;
         }
 
-        /* 모바일 전용 그래프 영역 (좌측 금액 온전 노출 + 가로 드래그/확대/축소) */
+        /* 모바일 전용 그래프 영역 */
         .chart-panel {
             margin-top: 10px;
             background: #fff;
@@ -278,8 +278,8 @@
             overflow: hidden;
         }
         .y-axis-fixed-box {
-            flex: 0 0 66px;
-            width: 66px;
+            flex: 0 0 72px;
+            width: 72px;
             height: 100%;
             background: #ffffff;
             border-right: 1px solid #e2e8f0;
@@ -351,7 +351,7 @@
     <!-- 모바일 전용 그래프 영역 -->
     <div class="chart-panel">
         <div class="chart-toolbar">
-            <span class="chart-title" id="zoomStatus">시세 추이 (좌측 금액 고정 · 1.0x)</span>
+            <span class="chart-title" id="zoomStatus">시세 추이 (일별 첫 표지 · 1.0x)</span>
             <div class="zoom-controls">
                 <button type="button" class="zoom-btn" onclick="zoomChart(1.35)">확대 +</button>
                 <button type="button" class="zoom-btn" onclick="zoomChart(0.65)">축소 -</button>
@@ -803,13 +803,13 @@
         if (!wrapper || !box) return;
 
         latestChartPointCount = dataPointCount;
-        const viewportW = wrapper.clientWidth || 260;
-        const standardW = Math.max(viewportW, dataPointCount * 12);
+        const viewportW = wrapper.clientWidth || 250;
+        const standardW = Math.max(viewportW, dataPointCount * 14);
         const targetWidth = Math.max(viewportW, Math.round(standardW * chartScale));
         box.style.width = `${targetWidth}px`;
 
         if (statusEl) {
-            const modeText = chartScale < 0.95 ? '한눈에 축소' : '좌측 금액 고정';
+            const modeText = chartScale < 0.95 ? '한눈에 축소' : '일별 첫 표지';
             statusEl.textContent = `시세 추이 (${modeText} · ${chartScale.toFixed(1)}x)`;
         }
         if (chartInstance) {
@@ -880,9 +880,9 @@
                 animation: false,
                 layout: {
                     padding: {
-                        top: 32,
-                        bottom: 34,
-                        left: 4,
+                        top: 30,
+                        bottom: 24,
+                        left: 6,
                         right: 2
                     }
                 },
@@ -900,7 +900,7 @@
                         border: { display: false },
                         grid: { display: false },
                         ticks: {
-                            maxTicksLimit: 7,
+                            maxTicksLimit: 6,
                             font: { size: 9, weight: 'bold' },
                             color: '#334155',
                             callback: function(value) {
@@ -951,7 +951,8 @@
                 layout: {
                     padding: {
                         top: 4,
-                        right: 12
+                        right: 12,
+                        bottom: 0
                     }
                 },
                 plugins: {
@@ -968,11 +969,13 @@
                     x: {
                         ticks: {
                             autoSkip: false,
-                            maxRotation: 45,
+                            maxRotation: 0,
                             minRotation: 0,
                             font: {
-                                size: 9
-                            }
+                                size: 10,
+                                weight: 'bold'
+                            },
+                            color: '#1e293b'
                         }
                     },
                     y: {
@@ -980,7 +983,7 @@
                         beginAtZero: false,
                         ticks: {
                             display: false,
-                            maxTicksLimit: 7
+                            maxTicksLimit: 6
                         }
                     }
                 }
@@ -1005,12 +1008,18 @@
         for (let d = 1; d <= lastDay; d++) {
             const rows = monthData.days[d];
             if (rows && rows.length > 0) {
-                rows.forEach((row, idx) => {
+                let isFirstValidInDay = true;
+                rows.forEach((row) => {
                     const hasDon = row.don && row.don !== '-';
                     const hasJongro = row.jongro !== '' && row.jongro !== null && row.jongro !== undefined;
                     if (!hasDon && !hasJongro) return;
 
-                    labels.push(`${d}일(${idx+1})`);
+                    if (isFirstValidInDay) {
+                        labels.push(`${d}일`);
+                        isFirstValidInDay = false;
+                    } else {
+                        labels.push('');
+                    }
                     
                     if (hasDon) {
                         const cleanDon = Number(String(row.don).replace(/,/g, ''));
