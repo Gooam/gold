@@ -226,7 +226,7 @@
             white-space: nowrap;
         }
 
-        /* 그래프 영역 (좌측 Y축 고정 + 차트 가로 스크롤/확대/축소) */
+        /* 모바일 전용 그래프 영역 (좌측 금액 온전 노출 + 가로 드래그/확대/축소) */
         .chart-panel {
             margin-top: 10px;
             background: #fff;
@@ -254,7 +254,7 @@
             align-items: center;
         }
         .zoom-btn {
-            padding: 4px 8px;
+            padding: 5px 8px;
             font-size: 11px;
             font-weight: bold;
             border-radius: 5px;
@@ -271,15 +271,15 @@
             position: relative;
             display: flex;
             width: 100%;
-            height: 310px;
+            height: 320px;
             border: 1px solid #e2e8f0;
             border-radius: 6px;
             background: #ffffff;
             overflow: hidden;
         }
         .y-axis-fixed-box {
-            flex: 0 0 56px;
-            width: 56px;
+            flex: 0 0 66px;
+            width: 66px;
             height: 100%;
             background: #ffffff;
             border-right: 1px solid #e2e8f0;
@@ -348,7 +348,7 @@
         </table>
     </div>
 
-    <!-- 그래프 영역 -->
+    <!-- 모바일 전용 그래프 영역 -->
     <div class="chart-panel">
         <div class="chart-toolbar">
             <span class="chart-title" id="zoomStatus">시세 추이 (좌측 금액 고정 · 1.0x)</span>
@@ -803,7 +803,7 @@
         if (!wrapper || !box) return;
 
         latestChartPointCount = dataPointCount;
-        const viewportW = wrapper.clientWidth || 280;
+        const viewportW = wrapper.clientWidth || 260;
         const standardW = Math.max(viewportW, dataPointCount * 12);
         const targetWidth = Math.max(viewportW, Math.round(standardW * chartScale));
         box.style.width = `${targetWidth}px`;
@@ -882,8 +882,8 @@
                     padding: {
                         top: 32,
                         bottom: 34,
-                        left: 0,
-                        right: 0
+                        left: 4,
+                        right: 2
                     }
                 },
                 plugins: {
@@ -901,8 +901,8 @@
                         grid: { display: false },
                         ticks: {
                             maxTicksLimit: 7,
-                            font: { size: 9 },
-                            color: '#475569',
+                            font: { size: 9, weight: 'bold' },
+                            color: '#334155',
                             callback: function(value) {
                                 return Number(value).toLocaleString();
                             }
