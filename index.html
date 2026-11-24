@@ -386,6 +386,7 @@ var initialPinchStep = 24;
 var initialPinchCenterIdx = 0;
 var initialPinchMidX = 0;
 var touchMoved = false;
+var lastTouchTime = 0;
 
 function getTodayMonthStr() {
     var d = new Date();
@@ -1068,6 +1069,7 @@ function setupCandleEvents() {
     var vp = document.getElementById('candleViewport');
     if (!vp) return;
     vp.addEventListener('touchstart', function(e) {
+        lastTouchTime = Date.now();
         if (e.touches.length >= 2) {
             gestureMode = 'pinch';
             touchMoved = true;
@@ -1087,6 +1089,7 @@ function setupCandleEvents() {
     }, { passive: false });
 
     vp.addEventListener('touchmove', function(e) {
+        lastTouchTime = Date.now();
         e.preventDefault();
         if (e.touches.length >= 2) {
             if (gestureMode !== 'pinch') {
@@ -1118,6 +1121,7 @@ function setupCandleEvents() {
     }, { passive: false });
 
     vp.addEventListener('touchend', function(e) {
+        lastTouchTime = Date.now();
         if (e.touches.length === 0) {
             if (gestureMode === 'drag' && !touchMoved && e.changedTouches.length > 0) {
                 var touch = e.changedTouches[0];
@@ -1136,6 +1140,7 @@ function setupCandleEvents() {
     });
 
     vp.addEventListener('mousedown', function(e) {
+        if (Date.now() - lastTouchTime < 600) return;
         var p = getLogicalPointFromEvent(e.clientX, e.clientY);
         gestureMode = 'drag';
         touchMoved = false;
@@ -1144,6 +1149,7 @@ function setupCandleEvents() {
     });
 
     vp.addEventListener('mousemove', function(e) {
+        if (Date.now() - lastTouchTime < 600) return;
         if (gestureMode !== 'drag') return;
         var p = getLogicalPointFromEvent(e.clientX, e.clientY);
         var dx = p.x - dragStartX;
@@ -1153,6 +1159,7 @@ function setupCandleEvents() {
     });
 
     vp.addEventListener('mouseup', function(e) {
+        if (Date.now() - lastTouchTime < 600) return;
         if (gestureMode === 'drag' && !touchMoved) {
             var p = getLogicalPointFromEvent(e.clientX, e.clientY);
             selectCandleAtLogicalX(p.x);
