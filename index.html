@@ -1001,28 +1001,19 @@ function getLogicalPointFromEvent(clientX, clientY) {
     return { x: clientY - rect.top, y: rect.right - clientX };
 }
 function selectCandleAtLogicalX(logicalX) {
-    if (!dailyCandles || dailyCandles.length === 0) {
+    if (selectedCandleIdx >= 0) {
         selectedCandleIdx = -1;
         hideTooltip();
         renderCandleChart(false);
         return;
     }
+    if (!dailyCandles || dailyCandles.length === 0) return;
     var leftAxisW = 64;
     var relX = logicalX - leftAxisW + scrollOffsetPx;
     var idx = Math.floor(relX / candleStepPx);
     if (idx >= 0 && idx < dailyCandles.length) {
-        if (idx === selectedCandleIdx) {
-            selectedCandleIdx = -1;
-            hideTooltip();
-            renderCandleChart(false);
-            return;
-        }
         selectedCandleIdx = idx;
         showTooltipForCandle(dailyCandles[idx], logicalX);
-        renderCandleChart(false);
-    } else {
-        selectedCandleIdx = -1;
-        hideTooltip();
         renderCandleChart(false);
     }
 }
@@ -1110,7 +1101,7 @@ function setupCandleEvents() {
         } else if (e.touches.length === 1 && gestureMode === 'drag') {
             var p = getLogicalPointFromEvent(e.touches[0].clientX, e.touches[0].clientY);
             var dx = p.x - dragStartX;
-            if (Math.abs(dx) > 10) touchMoved = true;
+            if (Math.abs(dx) > 12) touchMoved = true;
             scrollOffsetPx = dragStartScroll - dx;
             renderCandleChart(false);
             if (selectedCandleIdx >= 0 && dailyCandles[selectedCandleIdx]) {
@@ -1153,7 +1144,7 @@ function setupCandleEvents() {
         if (gestureMode !== 'drag') return;
         var p = getLogicalPointFromEvent(e.clientX, e.clientY);
         var dx = p.x - dragStartX;
-        if (Math.abs(dx) > 6) touchMoved = true;
+        if (Math.abs(dx) > 8) touchMoved = true;
         scrollOffsetPx = dragStartScroll - dx;
         renderCandleChart(false);
     });
