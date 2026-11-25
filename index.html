@@ -1337,6 +1337,7 @@ function setupCalcEdgeBar() {
     var barDragStartY = 0;
     var barStartTopPx = 0;
     var barMoved = false;
+    var lastTapTime = 0;
     var userBaseCenterY = Math.round(window.innerHeight * 0.46);
     var lastTableScrollTop = wrapper ? wrapper.scrollTop : 0;
 
@@ -1377,7 +1378,7 @@ function setupCalcEdgeBar() {
     bar.addEventListener('touchmove', function(e) {
         if (e.touches.length !== 1) return;
         var dy = e.touches[0].clientY - barDragStartY;
-        if (Math.abs(dy) > 5) {
+        if (Math.abs(dy) > 8) {
             barMoved = true;
             e.preventDefault();
             userBaseCenterY = clampCenterY(barStartTopPx + dy);
@@ -1385,13 +1386,20 @@ function setupCalcEdgeBar() {
         }
     }, { passive: false });
 
-    bar.addEventListener('touchend', function() {
-        if (!barMoved) openCalculator();
-        setTimeout(function() { barMoved = false; }, 120);
-    });
+    bar.addEventListener('touchend', function(e) {
+        if (!barMoved) {
+            e.preventDefault();
+            lastTapTime = Date.now();
+            openCalculator();
+        }
+        barMoved = false;
+    }, { passive: false });
 
     bar.addEventListener('click', function() {
-        if (!barMoved) openCalculator();
+        if (Date.now() - lastTapTime < 400) return;
+        if (!barMoved) {
+            openCalculator();
+        }
         barMoved = false;
     });
 
