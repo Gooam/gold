@@ -970,7 +970,7 @@ function buildLineSeriesPoints() {
                     monthNum: monthNum,
                     day: d,
                     time: r.time || '',
-                    shortLabel: (rIdx === 0 && d === 1) ? (monthNum + '/1') : (rIdx === 0 ? (d + '일') : ''),
+                    shortLabel: d === 1 ? (monthNum + '/1') : (d + '일'),
                     fullDate: ym + '-' + String(d).padStart(2, '0') + (r.time ? (' ' + r.time) : ''),
                     don: donVal,
                     jongro: jongroVal,
@@ -1203,17 +1203,21 @@ function renderCandleChart(scrollToLatest) {
 
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
+    var prevDrawnDayKey = '';
     for (var k = startIdx; k <= endIdx; k++) {
         var lblItem = isLineChartMode ? lineSeriesPoints[k] : dailyCandles[k];
         if (!lblItem || !lblItem.shortLabel) continue;
         var lblCenterX = plotX + (k + 0.5) * candleStepPx - scrollOffsetPx;
         var isMonthStart = lblItem.day === 1;
         var isSelected = k === selectedCandleIdx;
+        var dayKey = lblItem.ym + '-' + lblItem.day;
+        if (isLineChartMode && dayKey === prevDrawnDayKey && !isSelected) continue;
         if (isSelected || isMonthStart || (lblCenterX - lastDrawnLabelX >= minLabelGapPx)) {
             ctx.fillStyle = isSelected ? '#d97706' : (isMonthStart ? '#2563eb' : '#334155');
             ctx.font = (isSelected || isMonthStart) ? 'bold 10px sans-serif' : '10px sans-serif';
             ctx.fillText(lblItem.shortLabel, lblCenterX, plotY + plotH + bottomAxisH / 2 + 1);
             lastDrawnLabelX = lblCenterX;
+            prevDrawnDayKey = dayKey;
         }
     }
     ctx.restore();
